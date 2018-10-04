@@ -16,5 +16,11 @@
   "bugs": {
     "url": "https://github.com/MyBitFoundation/MyBit-Network.website/issues"
   },
-  "homepage": "https://github.com/MyBitFoundation/MyBit-Network.website#readme"
+  "homepage": "https://github.com/MyBitFoundation/MyBit-Network.website#readme",
+  "dependencies": {
+    "@mybit/chain": "^0.1.3",
+    "@mybit/contracts": "^0.1.4",
+    "truffle-contract": "^3.0.6",
+    "web3": "^1.0.0-beta.36"
+  }
 }
