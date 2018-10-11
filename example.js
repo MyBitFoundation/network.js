@@ -1,9 +1,12 @@
 var Network = require('.');
-var accounts = require("@mybit/chain/accounts.json");
+var Web3 = require('web3');
 
-const platformOwner = accounts[0];
-const operatorAddress = accounts[1];
+(async function() {
 
+const web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
+
+const accounts  = await web3.eth.getAccounts();
+const [ platformOwner, operatorAddress ] = accounts;
 var operatorID;
 var assetID;
 
@@ -67,3 +70,6 @@ async function fundCoffee(){
 }
 
 fundCoffee();
+
+})();
+
