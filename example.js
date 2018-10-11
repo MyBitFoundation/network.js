@@ -7,43 +7,70 @@ const web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
 
 const accounts  = await web3.eth.getAccounts();
 const [ platformOwner, operatorAddress ] = accounts;
+var api = await Network.api();
 var operatorID;
 var assetID;
 
 async function setOperator(){
-  var id = await Network.addOperator(
-    operatorAddress,
-    'Mac the Operator',
-    platformOwner
-  );
+  //Check if operator is already set
+  var operatorURI = 'Mac the Operator';
+  var id = await api.generateOperatorID(operatorURI);
+  var currentAddress = await api.getOperatorAddress(id);
+  if(currentAddress == '0x0000000000000000000000000000000000000000'){
+    //If not set
+    id = await Network.addOperator(
+      operatorAddress,
+      operatorURI,
+      platformOwner
+    );
 
-  await Network.acceptEther(id, operatorAddress);
+    await Network.acceptEther(id, operatorAddress);
+  } else {
+    console.log('Operator already set')
+  }
 
   return id;
 }
 
 async function startCrowdsale(){
-  await Network.approveBurn(operatorAddress);
+  var id = await api.generateAssetID(operatorAddress, 70000000000000000, operatorID, "CoffeeRun");
+  var tokenAddress = await api.getAssetAddress(id);
 
-  var id = await Network.createAsset({
-      assetURI: "CoffeeRun",
-      operatorID: operatorID,
-      fundingLength: 1000,
-      amountToRaise: 70000000000000000, //about $20 CAD
-      brokerPercent: 0,
-      broker: operatorAddress //operator is also broker
-  });
+  if(tokenAddress == '0x0000000000000000000000000000000000000000'){
+    await Network.approveBurn(operatorAddress);
 
-  return id;
+    var response = await Network.createAsset({
+        assetURI: "CoffeeRun",
+        operatorID: operatorID,
+        fundingLength: 1000,
+        amountToRaise: 70000000000000000, //about $20 CAD
+        brokerPercent: 0,
+        broker: operatorAddress //operator is also broker
+    });
+  } else {
+    var response = {};
+    response._assetID = id;
+    response._tokenAddress = tokenAddress;
+    console.log('Crowdsale already started');
+  }
+
+  return response;
 }
 
 async function contribute(account, amount){
-  await Network.approveBurn(account);
-  await Network.fundAsset({
-      assetID: assetID,
-      amount: amount,
-      address: account
-  });
+  crowdsaleFinalized = await api.crowdsaleFinalized(assetID);
+  if(!crowdsaleFinalized){
+    await Network.approveBurn(account);
+    await Network.fundAsset({
+        assetID: assetID,
+        amount: amount,
+        address: account
+    });
+    console.log('Contributed ', amount);
+  } else {
+    console.log('Crowdsale already finished!');
+  }
+
 }
 
 async function fundCoffee(){
@@ -72,4 +99,3 @@ async function fundCoffee(){
 fundCoffee();
 
 })();
-

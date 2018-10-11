@@ -21,6 +21,7 @@ module.exports = (function (){
   }
 
   //Setup contracts
+  var apiContract = contract(ContractArtifacts.API);
   var mybitContract = contract(ContractArtifacts.BurnableToken);
   var erc20BurnerContract = contract(ContractArtifacts.ERC20Burner);
   var databaseContract = contract(ContractArtifacts.Database);
@@ -40,6 +41,10 @@ module.exports = (function (){
   var divTokenERCContract = contract(ContractArtifacts.DividendTokenERC20);
 
   return {
+    api: async () => {
+      return await apiContract.at(Chain.API());
+    },
+
     dividendTokenETH: async (tokenAddress) => {
       return await divTokenETHContract.at(tokenAddress);
     },
