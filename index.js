@@ -1,8 +1,18 @@
-var ContractArtifacts = require("@mybit/contracts");
-var Chain = require("@mybit/chain");
-var Web3 = require("web3");
-var TruffleContract = require("truffle-contract");
-var async = require("async");
+const ContractArtifacts = require("@mybit/contracts");
+const Chain = require("@mybit/chain");
+const Web3 = require("web3");
+const TruffleContract = require("truffle-contract");
+const Promisify = (inner) =>
+    new Promise((resolve, reject) =>
+        inner((err, res) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(res);
+            }
+        })
+    );
+
 
 function contract(artifact){
   var c = TruffleContract(artifact);
@@ -107,16 +117,17 @@ module.exports = (function (){
         return tx.tx;
       }
     },
-/*
+
     issueDividends: async (assetID, account, amount) => {
       var apiInstance = await apiContract.at(Chain.API());
       var tokenAddress = await apiInstance.getAssetAddress(assetID);
-      var tokenInstance = await divTokenInterface.at(tokenAddress);
-      var erc20Address = await tokenInstance.getERC20();
+      var interfaceInstance = await divTokenInterface.at(tokenAddress);
+      var erc20Address = await interfaceInstance.getERC20();
       if(erc20Address == '0x0000000000000000000000000000000000000000'){
         var balance = await web3.eth.getBalance(account);
         if(balance >= amount){
           try{
+            var tokenInstance = await divTokenETHContract.at(tokenAddress);
             await tokenInstance.issueDividends({from:account, value:amount});
             console.log('Succesful');
             return true;
@@ -133,6 +144,7 @@ module.exports = (function (){
         var balance = await erc20Instance.balanceOf(account);
         if(balance >= amount){
           try{
+            var tokenInstance = await divTokenERCContract.at(tokenAddress);
             await tokenInstance.issueDividends(amount, {from:account});
             console.log('Succesful');
             return true;
@@ -146,7 +158,7 @@ module.exports = (function (){
         }
       }
     },
-*/
+
     getAssetsByInvestor: async (address) => {
       var assets = [];
       var crowdsaleETHInstance = await crowdsaleETHContract.at(Chain.CrowdsaleETH());
@@ -186,7 +198,7 @@ module.exports = (function (){
 
       return assets;
     },
-/*
+
     getAssetsByOperator: async (address) => {
       var assets = [];
       var apiInstance = await apiContract.at(Chain.API());
@@ -195,24 +207,21 @@ module.exports = (function (){
       var crowdsaleGenERCInstance = await crowdsaleGeneratorERC20Contract.at(Chain.CrowdsaleGeneratorERC20());
       await getAssets(crowdsaleGenERCInstance);
 
-      function getAssets(instance){
+      async function getAssets(instance){
         fundingEvent = instance.LogAssetFundingStarted({}, {fromBlock: 0, toBlock: 'latest'});
-        fundingEvent.get((error, logs) => {
-          logs.forEach(function (log, index) {
-            async () => {
-              var assetID = log.args._assetID;
-              var operator = await apiInstance.getAssetOperator(assetID);
-              if(address == operator){
-                assets.push(assetID);
-              }
-            }
-          });
-        });
-      }
+        logs = await Promisify(callback => fundingEvent.get(callback));
+        for(var i=0; i<logs.length; i++){
+          var assetID = logs[i].args._assetID;
+          var operator = await apiInstance.getAssetOperator(assetID);
+          if(address.toLowerCase() == operator.toLowerCase()){
+            assets.push(assetID);
+          }
+        }
+      };
 
       return assets;
     },
-*/
+
     getTotalAssets: async () => {
       var assets = [];
       var crowdsaleGenETHInstance = await crowdsaleGeneratorETHContract.at(Chain.CrowdsaleGeneratorETH());
@@ -232,7 +241,7 @@ module.exports = (function (){
 
       return assets;
     },
-/*
+
     getOpenCrowdsales: async () => {
       var assets = [];
       var apiInstance = await apiContract.at(Chain.API());
@@ -243,39 +252,24 @@ module.exports = (function (){
 
       async function getAssets(instance) {
         fundingEvent = instance.LogAssetFundingStarted({}, {fromBlock: 0, toBlock: 'latest'});
-        fundingEvent.get(async (error, logs) => {
-          for(var i=0; i<logs.length; i++){
-            var assetID = logs[i].args._assetID;
-            var finalized = await apiInstance.crowdsaleFinalized(assetID);
-            if(!finalized){
-              console.log(logs[i].args);
+        logs = await Promisify(callback => fundingEvent.get(callback));
+        //console.log(logs);
+        for(var i=0; i<logs.length; i++){
+          var assetID = logs[i].args._assetID;
+          var finalized = await apiInstance.crowdsaleFinalized(assetID);
+          if(!finalized){
+            var deadline = Number(await apiInstance.getAssetFundingDeadline(assetID));
+            var now = Math.round(new Date().getTime()/1000); //Current time in seconds;
+            if(deadline > now){
               assets.push(assetID);
             }
           }
-        });
-      }
+        }
+      };
 
       return assets;
-      /*
-      async function asyncForEach(array){
-        for (var i=0; i<array.length; i++) {
-          console.log(array[i].args);
-          var assetID = array[i].args._assetID;
-          var finalized = await apiInstance.crowdsaleFinalized(assetID);
-          if(!finalized){
-            assets.push(assetID);
-          }
-        }
-      }
-
-      async.parallel(assets, function(result) {
-          console.log(result);
-          return result;
-      });
-      */
-/*
     },
-*/
+
     getFundingTimeLeft: async (assetID) => {
       var instance = await apiContract.at(Chain.API());
       var deadline = Number(await instance.getAssetFundingDeadline(assetID));
