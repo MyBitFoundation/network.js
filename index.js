@@ -2,6 +2,7 @@ var ContractArtifacts = require("@mybit/contracts");
 var Chain = require("@mybit/chain");
 var Web3 = require("web3");
 var TruffleContract = require("truffle-contract");
+var async = require("async");
 
 function contract(artifact){
   var c = TruffleContract(artifact);
@@ -39,6 +40,8 @@ module.exports = (function (){
   var assetExchangeContract = contract(ContractArtifacts.AssetExchange);
   var divTokenETHContract = contract(ContractArtifacts.DividendToken);
   var divTokenERCContract = contract(ContractArtifacts.DividendTokenERC20);
+  var divTokenInterface = contract(ContractArtifacts.DivToken);
+  var erc20Interface = contract(ContractArtifacts.ERC20);
 
   return {
     api: async () => {
@@ -62,81 +65,24 @@ module.exports = (function (){
       burnerInstance = await erc20BurnerContract.at(burnerAddress);
       await burnerInstance.givePermission({from: fromAddress});
       return true;
-
-      /*
-      return new Promise((resolve, reject) => {
-        var count = 0;
-        var amount = 1000000000000000000000000000000; //Some large amount 10^30
-        var burnerAddress = Chain.ERC20Burner();
-        mybitContract.at(Chain.MyBit()).then(function(instance){
-        return instance.approve(burnerAddress, amount, {from: fromAddress});
-        }).then(function(){
-          complete();
-        });
-
-        erc20BurnerContract.at(burnerAddress).then(function(instance){
-        return instance.givePermission({from: fromAddress});
-        }).then(function(){
-          complete();
-        });
-
-        function complete(){
-          if(count == 1){
-            return resolve(true);
-          } else {
-            count++;
-          }
-        }
-      });
-      */
     },
 
     addOperator: async (account, name, owner) => {
       instance = await operatorsContract.at(Chain.Operators());
       tx = await instance.registerOperator(account, name, {from: owner});
       return tx.logs[0].args._operatorID;
-      /*
-      return new Promise((resolve, reject) => {
-        operatorsContract.at(Chain.Operators()).then(function(instance){
-          return instance.registerOperator(account, name, {from: owner});
-        }).then(function(tx){
-          var operatorID = tx.logs[0].args._operatorID
-          return resolve(operatorID);
-        }).catch(e => {
-          return reject(e);
-        });
-      });
-      */
     },
 
     acceptEther: async (id, operatorAddress) => {
       instance = await operatorsContract.at(Chain.Operators());
       await instance.acceptEther(id, true, {from: operatorAddress});
       return true;
-      /*
-      return new Promise((resolve, reject) => {
-        operatorsContract.at(Chain.Operators()).then(function(instance){
-          return instance.acceptEther(id, true, {from: operatorAddress});
-        }).then(function(tx){
-          return resolve(true);
-        });
-      });
-      */
     },
 
     acceptERC20Token: async (id, tokenAddress, operatorAddress) => {
       instance = await operatorsContract.at(Chain.Operators());
       await instance.acceptERC20Token(id, tokenAddress, true, {from: operatorAddress});
       return true;
-      /*
-      return new Promise((resolve, reject) => {
-        operatorsContract.at(Chain.Operators()).then(function(instance){
-          return instance.acceptERC20Token(id, tokenAddress, true, {from: operatorAddress});
-        }).then(function(tx){
-          return resolve(true);
-        });
-      });
-      */
     },
 
     createAsset: async (object) => {
@@ -149,25 +95,6 @@ module.exports = (function (){
         tx = await instance.createAssetOrderETH(object.assetURI, object.operatorID, object.fundingLength, object.amountToRaise, object.brokerPercent, {from: object.broker, gas:2300000});
         return tx.logs[0].args;
       }
-      /*
-      return new Promise((resolve, reject) => {
-        if(object.fundingToken){
-          crowdsaleGeneratorERC20Contract.at(Chain.CrowdsaleGeneratorERC20())
-          .then(function(instance){
-            return instance.createAssetOrderERC20(object.assetURI, object.operatorID, object.fundingLength, object.amountToRaise, object.brokerFee, object.fundingToken, {from: object.broker, gas:2300000});
-          }).then(function(tx){
-            return resolve(tx.logs[0].args._assetID);
-          });
-        } else {
-          crowdsaleGeneratorETHContract.at(Chain.CrowdsaleGeneratorETH())
-          .then(function(instance){
-            return instance.createAssetOrderETH(object.assetURI, object.operatorID, object.fundingLength, object.amountToRaise, object.brokerPercent, {from: object.broker, gas:2300000});
-          }).then(function(tx){
-            return resolve(tx.logs[0].args._assetID);
-          });
-        }
-      });
-      */
     },
 
     fundAsset: async (object) => {
@@ -180,26 +107,243 @@ module.exports = (function (){
         tx = await instance.buyAssetOrderETH(object.assetID, {from: object.address, value: object.amount, gas:2300000});
         return tx.tx;
       }
-      /*
-      return new Promise((resolve, reject) => {
-        if(object.fundingToken){
-          crowdsaleERC20Contract.at(Chain.CrowdsaleERC20())
-          .then(function(instance){
-            return instance.buyAssetOrderERC20(object.assetID, object.amount, {from: object.address, gas:2300000});
-          }).then(function(tx){
-            return resolve(tx.tx);
-          });
+    },
+/*
+    issueDividends: async (assetID, account, amount) => {
+      var apiInstance = await apiContract.at(Chain.API());
+      var tokenAddress = await apiInstance.getAssetAddress(assetID);
+      var tokenInstance = await divTokenInterface.at(tokenAddress);
+      var erc20Address = await tokenInstance.getERC20();
+      if(erc20Address == '0x0000000000000000000000000000000000000000'){
+        var balance = await web3.eth.getBalance(account);
+        if(balance >= amount){
+          try{
+            await tokenInstance.issueDividends({from:account, value:amount});
+            console.log('Succesful');
+            return true;
+          } catch(e){
+            console.log(e);
+            return false;
+          }
         } else {
-          crowdsaleETHContract.at(Chain.CrowdsaleETH())
-          .then(function(instance){
-            return instance.buyAssetOrderETH(object.assetID, {from: object.address, value: object.amount, gas:2300000});
-          }).then(function(tx){
-            console.log(tx);
-            return resolve(tx.tx);
-          });
+          console.log('Not enough funds!');
+          return false;
         }
+      } else {
+        var erc20Instance = await erc20Interface.at(erc20Address);
+        var balance = await erc20Instance.balanceOf(account);
+        if(balance >= amount){
+          try{
+            await tokenInstance.issueDividends(amount, {from:account});
+            console.log('Succesful');
+            return true;
+          } catch(e){
+            console.log(e);
+            return false;
+          }
+        } else {
+          console.log('Not enough funds!');
+          return false;
+        }
+      }
+    },
+*/
+    getAssetsByInvestor: async (address) => {
+      var assets = [];
+      var crowdsaleETHInstance = await crowdsaleETHContract.at(Chain.CrowdsaleETH());
+      getAssets(crowdsaleETHInstance);
+      var crowdsaleERCInstance = await crowdsaleERC20Contract.at(Chain.CrowdsaleERC20());
+      getAssets(crowdsaleERCInstance);
+
+      function getAssets(instance){
+        fundingEvent = instance.LogAssetPurchased({_sender: address}, {fromBlock: 0, toBlock: 'latest'});
+        fundingEvent.get((error, logs) => {
+          logs.forEach(function (log, index) {
+            var assetID = log.args._assetID;
+            assets.push(assetID);
+          });
+        });
+      }
+
+      return assets;
+    },
+
+    getAssetsByManager: async (address) => {
+      var assets = [];
+      var crowdsaleGenETHInstance = await crowdsaleGeneratorETHContract.at(Chain.CrowdsaleGeneratorETH());
+      getAssets(crowdsaleGenETHInstance);
+      var crowdsaleGenERCInstance = await crowdsaleGeneratorERC20Contract.at(Chain.CrowdsaleGeneratorERC20());
+      getAssets(crowdsaleGenERCInstance);
+
+      function getAssets(instance){
+        fundingEvent = instance.LogAssetFundingStarted({_assetManager: address}, {fromBlock: 0, toBlock: 'latest'});
+        fundingEvent.get((error, logs) => {
+          logs.forEach(function (log, index) {
+            var assetID = log.args._assetID;
+            assets.push(assetID);
+          });
+        });
+      }
+
+      return assets;
+    },
+/*
+    getAssetsByOperator: async (address) => {
+      var assets = [];
+      var apiInstance = await apiContract.at(Chain.API());
+      var crowdsaleGenETHInstance = await crowdsaleGeneratorETHContract.at(Chain.CrowdsaleGeneratorETH());
+      await getAssets(crowdsaleGenETHInstance);
+      var crowdsaleGenERCInstance = await crowdsaleGeneratorERC20Contract.at(Chain.CrowdsaleGeneratorERC20());
+      await getAssets(crowdsaleGenERCInstance);
+
+      function getAssets(instance){
+        fundingEvent = instance.LogAssetFundingStarted({}, {fromBlock: 0, toBlock: 'latest'});
+        fundingEvent.get((error, logs) => {
+          logs.forEach(function (log, index) {
+            async () => {
+              var assetID = log.args._assetID;
+              var operator = await apiInstance.getAssetOperator(assetID);
+              if(address == operator){
+                assets.push(assetID);
+              }
+            }
+          });
+        });
+      }
+
+      return assets;
+    },
+*/
+    getTotalAssets: async () => {
+      var assets = [];
+      var crowdsaleGenETHInstance = await crowdsaleGeneratorETHContract.at(Chain.CrowdsaleGeneratorETH());
+      getAssets(crowdsaleGenETHInstance);
+      var crowdsaleGenERCInstance = await crowdsaleGeneratorERC20Contract.at(Chain.CrowdsaleGeneratorERC20());
+      getAssets(crowdsaleGenERCInstance);
+
+      function getAssets(instance){
+        fundingEvent = instance.LogAssetFundingStarted({}, {fromBlock: 0, toBlock: 'latest'});
+        fundingEvent.get((error, logs) => {
+          logs.forEach(function (log, index) {
+            var assetID = log.args._assetID;
+            assets.push(assetID);
+          });
+        });
+      }
+
+      return assets;
+    },
+/*
+    getOpenCrowdsales: async () => {
+      var assets = [];
+      var apiInstance = await apiContract.at(Chain.API());
+      var crowdsaleGenETHInstance = await crowdsaleGeneratorETHContract.at(Chain.CrowdsaleGeneratorETH());
+      await getAssets(crowdsaleGenETHInstance);
+      var crowdsaleGenERCInstance = await crowdsaleGeneratorERC20Contract.at(Chain.CrowdsaleGeneratorERC20());
+      await getAssets(crowdsaleGenERCInstance);
+
+      async function getAssets(instance) {
+        fundingEvent = instance.LogAssetFundingStarted({}, {fromBlock: 0, toBlock: 'latest'});
+        fundingEvent.get(async (error, logs) => {
+          for(var i=0; i<logs.length; i++){
+            var assetID = logs[i].args._assetID;
+            var finalized = await apiInstance.crowdsaleFinalized(assetID);
+            if(!finalized){
+              console.log(logs[i].args);
+              assets.push(assetID);
+            }
+          }
+        });
+      }
+
+      return assets;
+      /*
+      async function asyncForEach(array){
+        for (var i=0; i<array.length; i++) {
+          console.log(array[i].args);
+          var assetID = array[i].args._assetID;
+          var finalized = await apiInstance.crowdsaleFinalized(assetID);
+          if(!finalized){
+            assets.push(assetID);
+          }
+        }
+      }
+
+      async.parallel(assets, function(result) {
+          console.log(result);
+          return result;
       });
       */
+/*
+    },
+*/
+    getFundingTimeLeft: async (assetID) => {
+      var instance = await apiContract.at(Chain.API());
+      var deadline = Number(await instance.getAssetFundingDeadline(assetID));
+      var now = Math.round(new Date().getTime()/1000); //Current time in seconds;
+      var timeleft;
+      if(deadline > now){
+        timeleft = deadline - now;
+      } else {
+        timeleft = 0;
+      }
+      return timeleft
+    },
+
+    getFundingGoal: async (assetID) => {
+      var apiInstance = await apiContract.at(Chain.API());
+      var finalized = await apiInstance.crowdsaleFinalized(assetID);
+      var goal;
+
+      //Funding goal gets deleted when crowdsale finalizes, so we must get the token supply
+      if(finalized) {
+        var tokenAddress = await apiInstance.getAssetAddress(assetID);
+        var tokenInstance = await divTokenInterface.at(tokenAddress);
+        goal = Number(await tokenInstance.totalSupply());
+      } else {
+        goal = Number(await apiInstance.getAssetFundingGoal(assetID));
+      }
+      return goal;
+    },
+
+    getFundingProgress: async (assetID) => {
+      var apiInstance = await apiContract.at(Chain.API());
+      var tokenAddress = await apiInstance.getAssetAddress(assetID);
+      var tokenInstance = await divTokenInterface.at(tokenAddress);
+      var progress = Number(await tokenInstance.totalSupply());
+      return progress;
+    },
+
+    getAssetOperator: async (assetID) => {
+      var apiInstance = await apiContract.at(Chain.API());
+      var operator = await apiInstance.getAssetOperator(assetID);
+      return operator;
+    },
+
+    getAssetManager: async (assetID) => {
+      var apiInstance = await apiContract.at(Chain.API());
+      var manager = await apiInstance.getAssetManager(assetID);
+      return manager;
+    },
+
+    getAssetInvestors: async (assetID) => {
+      var investors = [];
+      var crowdsaleETHInstance = await crowdsaleETHContract.at(Chain.CrowdsaleETH());
+      getInvestors(crowdsaleETHInstance);
+      var crowdsaleERCInstance = await crowdsaleERC20Contract.at(Chain.CrowdsaleERC20());
+      getInvestors(crowdsaleERCInstance);
+
+      function getInvestors(instance){
+        fundingEvent = instance.LogAssetPurchased({_assetID: assetID}, {fromBlock: 0, toBlock: 'latest'});
+        fundingEvent.get((error, logs) => {
+          logs.forEach(function (log, index) {
+            var investor = log.args._sender;
+            investors.push(investor);
+          });
+        });
+      }
+
+      return investors;
     }
   }
 })();
