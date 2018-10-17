@@ -59,11 +59,10 @@ module.exports = (function (){
     approveBurn: async (fromAddress) => {
       var count = 0;
       var amount = 1000000000000000000000000000000; //Some large amount 10^30
-      var burnerAddress = Chain.ERC20Burner();
       tokenInstance = await mybitContract.at(Chain.MyBit());
-      await tokenInstance.approve(burnerAddress, amount, {from: fromAddress});
-      burnerInstance = await erc20BurnerContract.at(burnerAddress);
-      await burnerInstance.givePermission({from: fromAddress});
+      await tokenInstance.approve(Chain.ERC20Burner(), amount, {from: fromAddress});
+      contractManagerInstance = await contractManagerContract.at(Chain.ContractManager());
+      await contractManagerInstance.setContractStatePreferences(true, false, {from: fromAddress});
       return true;
     },
 
