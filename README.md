@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://mybit.io/">
-    <img alt="MyBit Logo" src="https://files.mybit.io/mybit-icon-28x28.png" width="70">
+    <img alt="MyBit Logo" src="https://files.mybit.io/favicons/favicon-96x96.png" width="70">
   </a>
 </p>
 
