@@ -1,6 +1,6 @@
 # Welcome to Network.js
 
- [![MyBit Logo](https://files.mybit.io/mybit-icon-28x28.png)](https://mybit.io/) Go back to the [MyBit Developer Portal](https://developer.mybit.io/portal/)
+ [![MyBit Logo](https://files.mybit.io/mybit-icon-28x28.png)](https://mybit.io/) [MyBit Developer Portal](https://developer.mybit.io/portal/) &gt; [Network.js](https://developer.mybit.io/web)
 
 ## network.js
 
