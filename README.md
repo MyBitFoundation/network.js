@@ -66,6 +66,8 @@ An operator must specify the currencies that they accept. This function sets the
 #### acceptERC20Token( id, tokenAddres, operatorAddress ) returns ( bool )
 An operator must specify the currencies that they accept. This function sets the operator as accepting ERC-20 tokens. Pass the operatorID, ERC-20 token address, and the operator address. The function is called from the operator address.
 
+*Note, accepting Ether and accepting ERC-20 tokens is not mutually exclusive. An operator can accept as many currencies as they want.*
+
 #### issueDividends( assetID, account, amount ) returns ( bool )
 To pay out dividends to investors, an operator can call this function. Pass the assetID, the account from which you want to pay, and the amount you'd like to pay. The function determines if the asset takes Ether or an ERC-20 token. If the account does not have a sufficient balance in the required payment method, the function will fail.
 
