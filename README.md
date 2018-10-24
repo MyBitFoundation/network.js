@@ -47,7 +47,9 @@ As of version 0.0.5, these are the functions currently available from network.js
 
 #### Full Contracts
 
-**api\(\) returns \( contract instance \)**
+```javascript
+  api() returns (contract instance)
+```
 
 The api function returns the entire [API.sol](https://github.com/MyBitFoundation/MyBit-Network.tech/blob/master/contracts/database/API.sol) contract, which contains many getter functions for accessing variable on [Database.sol](https://github.com/MyBitFoundation/MyBit-Network.tech/blob/master/contracts/database/Database.sol).
 
@@ -172,5 +174,3 @@ Pass an assetID and get back an array of all the addresses that have funded it.
 This application is unstable and has not undergone any rigorous security audits. Use at your own risk.
 
  MyBit Platform™ CHE-177.186.963  
-
-
