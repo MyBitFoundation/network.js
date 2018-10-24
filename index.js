@@ -42,11 +42,12 @@ module.exports = (function (){
   var accessHierarchyContract = contract(ContractArtifacts.AccessHierarchy);
   var platformFundsContract = contract(ContractArtifacts.PlatformFunds);
   var operatorsContract = contract(ContractArtifacts.Operators);
-  var brokerEscrowContract = contract(ContractArtifacts.BrokerEscrow);
+  var assetManagerEscrowContract = contract(ContractArtifacts.AssetManagerEscrow);
   var crowdsaleETHContract = contract(ContractArtifacts.CrowdsaleETH);
   var crowdsaleGeneratorETHContract = contract(ContractArtifacts.CrowdsaleGeneratorETH);
   var crowdsaleERC20Contract = contract(ContractArtifacts.CrowdsaleERC20);
   var crowdsaleGeneratorERC20Contract = contract(ContractArtifacts.CrowdsaleGeneratorERC20);
+  var assetGeneratorContract = contract(ContractArtifacts.AssetGenerator);
   var assetExchangeContract = contract(ContractArtifacts.AssetExchange);
   var divTokenETHContract = contract(ContractArtifacts.DividendToken);
   var divTokenERCContract = contract(ContractArtifacts.DividendTokenERC20);
@@ -58,12 +59,60 @@ module.exports = (function (){
       return await apiContract.at(Chain.API());
     },
 
+    assetExchange: async () => {
+      return await assetExchangeContract.at(Chain.AssetExchange());
+    },
+
+    assetGenerator: async () => {
+      return await assetGeneratorContract.at(Chain.AssetGenerator());
+    },
+
+    assetManagerEscrow: async () => {
+      return await assetManagerEscrowContract.at(Chain.BrokerEscrow());
+    },
+
+    contractManager: async () => {
+      return await contractManagerContract.at(Chain.ContractManager());
+    },
+
+    crowdsaleETH: async () => {
+      return await crowdsaleETHContract.at(Chain.CrowdsaleETH());
+    },
+
+    crowdsaleERC20: async () => {
+      return await crowdsaleERC20Contract.at(Chain.CrowdsaleERC20());
+    },
+
+    crowdsaleGeneratorETH: async () => {
+      return await crowdsaleGeneratorETHContract.at(Chain.CrowdsaleGeneratorETH());
+    },
+
+    crowdsaleGeneratorERC20: async () => {
+      return await crowdsaleGeneratorERC20Contract.at(Chain.CrowdsaleGeneratorERC20());
+    },
+
+    database: async () => {
+      return await databaseContract.at(Chain.Database());
+    },
+
     dividendTokenETH: async (tokenAddress) => {
       return await divTokenETHContract.at(tokenAddress);
     },
 
     dividendTokenERC20: async (tokenAddress) => {
       return await divTokenERCContract.at(tokenAddress);
+    },
+
+    erc20Burner: async () => {
+      return await erc20BurnerContract.at(Chain.ERC20Burner());
+    },
+
+    operators: async () => {
+      return await operatorsContract.at(Chain.Operators());
+    },
+
+    platformFunds: async () => {
+      return await platformFundsContract.at(Chain.PlatformFunds());
     },
 
     approveBurn: async (fromAddress) => {
@@ -103,6 +152,16 @@ module.exports = (function (){
         instance = await crowdsaleGeneratorETHContract.at(Chain.CrowdsaleGeneratorETH());
         tx = await instance.createAssetOrderETH(object.assetURI, object.operatorID, object.fundingLength, object.amountToRaise, object.brokerPercent, {from: object.broker, gas:2300000});
         return tx.logs[0].args;
+      }
+    },
+
+    createDividendToken: async (object) => {
+      if(object.fundingToken){
+        instance = await divTokenERCContract.new(object.uri, object.owner, object.fundingToken);
+        return instance;
+      } else {
+        instance = await divTokenETHContract.new(object.uri, object.owner, {from: object.owner, gas:2700000});
+        return instance;
       }
     },
 
