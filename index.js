@@ -103,6 +103,10 @@ module.exports = (function (){
       return await divTokenERCContract.at(tokenAddress);
     },
 
+    erc20: async (tokenAddress) => {
+      return await mybitContract.at(tokenAddress);
+    },
+
     erc20Burner: async () => {
       return await erc20BurnerContract.at(Chain.ERC20Burner());
     },
@@ -144,40 +148,40 @@ module.exports = (function (){
     },
 
     createAsset: async (object) => {
-      if(object.fundingToken){
-        instance = await crowdsaleGeneratorERC20Contract.at(Chain.CrowdsaleGeneratorERC20());
-        tx = await instance.createAssetOrderERC20(object.assetURI, object.operatorID, object.fundingLength, object.amountToRaise, object.brokerFee, object.fundingToken, {from: object.broker, gas:2300000});
-        return tx.logs[0].args;
-      } else {
+      if(object.fundingToken === undefined){
         instance = await crowdsaleGeneratorETHContract.at(Chain.CrowdsaleGeneratorETH());
         tx = await instance.createAssetOrderETH(object.assetURI, object.operatorID, object.fundingLength, object.amountToRaise, object.brokerPercent, {from: object.broker, gas:2300000});
+        return tx.logs[0].args;
+      } else {
+        instance = await crowdsaleGeneratorERC20Contract.at(Chain.CrowdsaleGeneratorERC20());
+        tx = await instance.createAssetOrderERC20(object.assetURI, object.operatorID, object.fundingLength, object.amountToRaise, object.brokerPercent, object.fundingToken, {from: object.broker, gas:6700000});
         return tx.logs[0].args;
       }
     },
 
     createDividendToken: async (object) => {
-      if(object.fundingToken){
-        instance = await divTokenERCContract.new(object.uri, object.owner, object.fundingToken, {from: object.owner, gas:2700000});
+      if(object.fundingToken === undefined){
+        instance = await divTokenETHContract.new(object.uri, object.owner, {from: object.owner, gas:2700000});
         return instance;
       } else {
-        instance = await divTokenETHContract.new(object.uri, object.owner, {from: object.owner, gas:2700000});
+        instance = await divTokenERCContract.new(object.uri, object.owner, object.fundingToken, {from: object.owner, gas:2700000});
         return instance;
       }
     },
 
     createERC20Token: async (object) => {
-      instance = await mybitContract.new(object.uri, object.total);
+      instance = await mybitContract.new(object.uri, object.total, {from: object.owner, gas:2700000});
       return instance;
     },
 
     fundAsset: async (object) => {
-      if(object.fundingToken){
-        instance = await crowdsaleERC20Contract.at(Chain.CrowdsaleERC20());
-        tx = await instance.buyAssetOrderERC20(object.assetID, object.amount, {from: object.address, gas:2300000});
-        return tx.tx;
-      } else {
+      if(object.fundingToken === undefined){
         instance = await crowdsaleETHContract.at(Chain.CrowdsaleETH());
         tx = await instance.buyAssetOrderETH(object.assetID, {from: object.address, value: object.amount, gas:2300000});
+        return tx.tx;
+      } else {
+        instance = await crowdsaleERC20Contract.at(Chain.CrowdsaleERC20());
+        tx = await instance.buyAssetOrderERC20(object.assetID, object.amount, {from: object.address, gas:2300000});
         return tx.tx;
       }
     },
@@ -192,8 +196,7 @@ module.exports = (function (){
         if(balance >= amount){
           try{
             var tokenInstance = await divTokenETHContract.at(tokenAddress);
-            await tokenInstance.issueDividends({from:account, value:amount});
-            console.log('Succesful');
+            await tokenInstance.issueDividends({from:account, value:amount, gas: 220000});
             return true;
           } catch(e){
             console.log(e);
@@ -209,8 +212,7 @@ module.exports = (function (){
         if(balance >= amount){
           try{
             var tokenInstance = await divTokenERCContract.at(tokenAddress);
-            await tokenInstance.issueDividends(amount, {from:account});
-            console.log('Succesful');
+            await tokenInstance.issueDividends(amount, {from:account, gas: 220000});
             return true;
           } catch(e){
             console.log(e);
