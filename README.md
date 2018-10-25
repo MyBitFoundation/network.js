@@ -95,12 +95,12 @@ To start a crowdsale to fund a new asset you must pass this function and object 
 
 ```javascript
 {
-  assetURI: string, //Name of the asset
+  assetURI: string, //The URI where information about this asset can be found
   operatorID: bytes32, //Operator ID
   fundingLength: uint, //Funding time in seconds
   amountToRaise: uint, //Funding goal
-  brokerPercent: uint, //A number less than 100
-  broker: address, //Address of the asset manager (this function will be called from their account)
+  assetManagerPercent: uint, //A number less than 100: The percentage to be received by the AssetManager
+  assetManager: address, //Address of the asset manager (this function will be called from their account)
   fundingToken: address//Optional: if this asset is being funded with an ERC-20 token, you must pass the address
 }
 ```
@@ -172,5 +172,3 @@ Pass an assetID and get back an array of all the addresses that have funded it.
 This application is unstable and has not undergone any rigorous security audits. Use at your own risk.
 
  MyBit Platform™ CHE-177.186.963  
-
-
