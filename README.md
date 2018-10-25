@@ -47,9 +47,7 @@ As of version 0.0.5, these are the functions currently available from network.js
 
 #### Full Contracts
 
-```javascript
-  api() returns (contract instance)
-```
+**api\(\) returns \( contract instance \)**
 
 The api function returns the entire [API.sol](https://github.com/MyBitFoundation/MyBit-Network.tech/blob/master/contracts/database/API.sol) contract, which contains many getter functions for accessing variable on [Database.sol](https://github.com/MyBitFoundation/MyBit-Network.tech/blob/master/contracts/database/Database.sol).
 
@@ -97,12 +95,12 @@ To start a crowdsale to fund a new asset you must pass this function and object 
 
 ```javascript
 {
-  assetURI: string, //Name of the asset
+  assetURI: string, //The URI where information about this asset can be found
   operatorID: bytes32, //Operator ID
   fundingLength: uint, //Funding time in seconds
   amountToRaise: uint, //Funding goal
-  brokerPercent: uint, //A number less than 100
-  broker: address, //Address of the asset manager (this function will be called from their account)
+  assetManagerPercent: uint, //A number less than 100: The percentage to be received by the AssetManager
+  assetManager: address, //Address of the asset manager (this function will be called from their account)
   fundingToken: address//Optional: if this asset is being funded with an ERC-20 token, you must pass the address
 }
 ```
