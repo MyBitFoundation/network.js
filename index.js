@@ -157,12 +157,17 @@ module.exports = (function (){
 
     createDividendToken: async (object) => {
       if(object.fundingToken){
-        instance = await divTokenERCContract.new(object.uri, object.owner, object.fundingToken);
+        instance = await divTokenERCContract.new(object.uri, object.owner, object.fundingToken, {from: object.owner, gas:2700000});
         return instance;
       } else {
         instance = await divTokenETHContract.new(object.uri, object.owner, {from: object.owner, gas:2700000});
         return instance;
       }
+    },
+
+    createERC20Token: async (object) => {
+      instance = await mybitContract.new(object.uri, object.total);
+      return instance;
     },
 
     fundAsset: async (object) => {
