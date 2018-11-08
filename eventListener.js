@@ -5,13 +5,13 @@ class Web3EventsListener {
         this.activeEvents = {};
         this.web3Obj = null;
 
-        this.setEvent = this.setEvent.bidn(this);
-        this.subscriber = this.subscriber.bidn(this);
-        this.subscribeToLogs = this.subscribeToLogs.bidn(this);
-        this.subscribeToPendingTransactions = this.subscribeToPendingTransactions.bidn(this);
-        this.subscribeToNewBlockHeaders = this.subscribeToNewBlockHeaders.bidn(this);
-        this.subscribeToSyncing = this.subscribeToSyncing.bidn(this);
-        this.unSubscribe = this.unSubscribe.bidn(this);
+        this.setEvent = this.setEvent.bind(this);
+        this.subscriber = this.subscriber.bind(this);
+        this.subscribeToLogs = this.subscribeToLogs.bind(this);
+        this.subscribeToPendingTransactions = this.subscribeToPendingTransactions.bind(this);
+        this.subscribeToNewBlockHeaders = this.subscribeToNewBlockHeaders.bind(this);
+        this.subscribeToSyncing = this.subscribeToSyncing.bind(this);
+        this.unSubscribe = this.unSubscribe.bind(this);
     }
 
     setEvent (type, params, cb, eventEmitter) {
