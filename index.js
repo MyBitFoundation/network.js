@@ -2,6 +2,8 @@ const ContractArtifacts = require("@mybit/contracts");
 // const Chain = require("@mybit/chain");
 const Web3 = require("web3");
 const TruffleContract = require("truffle-contract");
+const Web3EventsListener = require("./eventListener");
+
 const Promisify = (inner) =>
     new Promise((resolve, reject) =>
         inner((err, res) => {
@@ -34,6 +36,7 @@ module.exports = (function (){
   }
 
   //Setup contracts
+  
   var apiContract = contract(ContractArtifacts.API);
   var mybitContract = contract(ContractArtifacts.BurnableToken);
   var erc20BurnerContract = contract(ContractArtifacts.ERC20Burner);
@@ -44,7 +47,7 @@ module.exports = (function (){
   var accessHierarchyContract = contract(ContractArtifacts.AccessHierarchy);
   var platformFundsContract = contract(ContractArtifacts.PlatformFunds);
   var operatorsContract = contract(ContractArtifacts.Operators);
-  var assetManagerEscrowCont  ract = contract(ContractArtifacts.AssetManagerEscrow);
+  var assetManagerEscrowContract = contract(ContractArtifacts.AssetManagerEscrow);
   var crowdsaleETHContract = contract(ContractArtifacts.CrowdsaleETH);
   var crowdsaleGeneratorETHContract = contract(ContractArtifacts.CrowdsaleGeneratorETH);
   var crowdsaleERC20Contract = contract(ContractArtifacts.CrowdsaleERC20);
@@ -58,7 +61,7 @@ module.exports = (function (){
 
   return {
     api: async () => {
-      return await apiContract.at('0x7c728214be9a0049e6a86f2137ec61030d0aa964'));
+      return await apiContract.at('0x7c728214be9a0049e6a86f2137ec61030d0aa964');
     },
 
     assetExchange: async () => {
@@ -155,7 +158,7 @@ module.exports = (function (){
         tx = await instance.createAssetOrderETH(object.assetURI, object.operatorID, object.fundingLength, object.amountToRaise, object.brokerPercent, {from: object.broker, gas:2300000});
         return tx.logs[0].args;
       } else {
-        instance = await crowdsaleGeneratorERC20Contract.at('0x988b6cfbf3332ff98ffbded665b1f53a61f92612';
+        instance = await crowdsaleGeneratorERC20Contract.at('0x988b6cfbf3332ff98ffbded665b1f53a61f92612');
         tx = await instance.createAssetOrderERC20(object.assetURI, object.operatorID, object.fundingLength, object.amountToRaise, object.brokerPercent, object.fundingToken, {from: object.broker, gas:6700000});
         return tx.logs[0].args;
       }
@@ -406,5 +409,7 @@ module.exports = (function (){
 
       return investors;
     },
+
+    getWeb3EventsListener: () => new Web3EventsListener(),
   }
 })();
