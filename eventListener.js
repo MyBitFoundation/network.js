@@ -4,7 +4,7 @@ class Web3EventsListener {
     constructor() {
         this.activeEvents = {};
         this.web3Obj = null;
-
+        this.subscriberId = 0;
         this.setEvent = this.setEvent.bind(this);
         this.subscriber = this.subscriber.bind(this);
         this.subscribeToLogs = this.subscribeToLogs.bind(this);
@@ -59,6 +59,7 @@ class Web3EventsListener {
     subscribeToPendingTransactions(event, cb, eventEmitter = 'data') {
         return this.subscriber(event, () => this.setEvent(
             'pendingTransactions',
+            null,
             cb, 
             eventEmitter
         ));
@@ -67,6 +68,7 @@ class Web3EventsListener {
     subscribeToNewBlockHeaders(event, cb, eventEmitter = 'data'){
         return this.subscriber(event, () => this.setEvent(
             'newBlockHeaders',
+            null,
             cb, 
             eventEmitter
         ))
@@ -75,6 +77,7 @@ class Web3EventsListener {
     subscribeToSyncing(event, cb, eventEmitter = 'data') {
         return this.subscriber(event, () => this.setEvent(
             'syncing',
+            null,
             cb, 
             eventEmitter
         ))
