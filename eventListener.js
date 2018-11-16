@@ -2,8 +2,8 @@ const Web3 = require('web3');
 
 class Web3EventsListener {
     constructor() {
-        this.activeEvents = {};
-        this.web3Obj = null;
+        this.activeEventsMap = {};
+        this.web3Instance = null;
         this.subscriberId = 0;
         this.setEvent = this.setEvent.bind(this);
         this.subscriber = this.subscriber.bind(this);
@@ -15,32 +15,22 @@ class Web3EventsListener {
     }
 
     setEvent (type, params, cb, eventEmitter) {
-      if (!this.web3Obj) {
-        const web3Provider = new Web3(new Web3.providers.WebsocketProvider('wss://ropsten.infura.io/ws'));
-        this.web3Obj = new Web3(web3Provider);
-      }
+      this.web3Instance = !this.web3Instance ? new Web3(new Web3.providers.WebsocketProvider('wss://ropsten.infura.io/ws')) : this.web3Instance
 
       const errCb = (err) => {
         /* eslint no-console: ["error", { allow: ["log", "error"] }] */
         if (err) console.log(err);
       }
 
-      let eventSubscription;
+      const eventSubscription = params ? this.web3Instance.eth.subscribe(type, params, errCb) : this.web3Instance.eth.subscribe(type, errCb);
 
-      if(params) {
-          eventSubscription =  this.web3Obj.eth.subscribe(type, params, errCb);
-      } else {
-        eventSubscription = this.web3Obj.eth.subscribe(type, errCb)
-      }
-     
       return eventSubscription.on(eventEmitter, result => cb(result));
     }
   
     subscriber(event, setEvent) {
       this.subscriberId = this.subscriberId + 1;
-      this.activeEvents[event] = this.activeEvents[event] || {};
-      this.activeEvents[event][this.subscriberId] = setEvent();
-      console.log(this.activeEvents, 'activeEvents') 
+      this.activeEventsMap[event] = this.activeEventsMap[event] || {};
+      this.activeEventsMap[event][this.subscriberId] = setEvent();
        return this.subscriberId;
     }
     
@@ -84,7 +74,7 @@ class Web3EventsListener {
     };
     
     unSubscribe(event, subscriberId) {
-      const currentEvent = this.activeEvents[event] || {};
+      const currentEvent = this.activeEventsMap[event] || {};
       if (currentEvent[subscriberId]) {
         currentEvent[subscriberId].unsubscribe((error) => {
           if (error) {
@@ -92,7 +82,7 @@ class Web3EventsListener {
             console.log(error);
           }
         });
-        delete this.activeEvents[event][subscriberId];
+        delete this.activeEventsMap[event][subscriberId];
       }
        return null;
     }

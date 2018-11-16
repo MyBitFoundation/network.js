@@ -2,5 +2,7 @@
 
 BASEDIR=$(pwd -P)
 NODEDIR="$BASEDIR/node_modules/@mybit/chain"
+# NODEDIR="$BASEDIR/fakechain"
 
 npx ganache-cli -d --mnemonic "myth like bonus scare over problem client lizard pioneer submit female collect" --networkId 70 --accounts 20 --db "$NODEDIR/chain"
+# npx ganache-cli -d --mnemonic "myth like bonus scare over problem client lizard pioneer submit female collect" --networkId 70 --accounts 20 --db "$NODEDIR"
