@@ -59,65 +59,65 @@ module.exports = (function (){
   var erc20Interface = contract(ContractArtifacts.ERC20);
 
   const contractsAddresses = {
-    apiAddress: () => apiContract.address,
-    mybitAddress: () => mybitContract.address,
-    erc20BurnerAddress: () => erc20BurnerContract.address,
-    databaseAddress: () => databaseContract.address,
-    contractManagerAddress: () => contractManagerContract.address,
-    singleOwnerAddress: () => singleOwnerContract.address,
-    pausibleAddress: () => pausibleContract.address,
-    accessHierarchyAddress: () => accessHierarchyContract.address,
-    platformFundsAddress: () => platformFundsContract.address,
-    operatorsAddress: () => operatorsContract.address,
-    assetManagerEscrowAddress: () => assetManagerEscrowContract.address,
-    crowdsaleETHAddress: () => crowdsaleETHContract.address,
-    crowdsaleGeneratorETHAddress: () => crowdsaleGeneratorETHContract.address,
-    crowdsaleERC20Address: () => crowdsaleERC20Contract.address,
-    crowdsaleGeneratorERC20CAddress: () => crowdsaleGeneratorERC20Contract.address,
-    assetGeneratorAddress: () => assetGeneratorContract.address,
-    assetExchangeAddress: () => assetExchangeContract.address,
-    divTokenETHAddress: () => divTokenETHContract.address,
-    divTokenERCAddress: () => divTokenERCContract.address,
-    divTokenInterfaceAddress: () => divTokenInterface.address,
-    erc20InterfaceAddress: () => erc20Interface.address,
+    apiAddress: (contractAddress) => contractAddress || apiContract.address,
+    mybitAddress: (contractAddress) => contractAddress || mybitContract.address,
+    erc20BurnerAddress: (contractAddress) => contractAddress || erc20BurnerContract.address,
+    databaseAddress: (contractAddress) => contractAddress || databaseContract.address,
+    contractManagerAddress: (contractAddress) => contractAddress || contractManagerContract.address,
+    singleOwnerAddress: (contractAddress) => contractAddress ||singleOwnerContract.address,
+    pausibleAddress: (contractAddress) =>  contractAddress || pausibleContract.address,
+    accessHierarchyAddress: (contractAddress) => contractAddress || accessHierarchyContract.address,
+    platformFundsAddress: (contractAddress) => contractAddress || platformFundsContract.address,
+    operatorsAddress: (contractAddress) => contractAddress || operatorsContract.address,
+    assetManagerEscrowAddress: (contractAddress) => contractAddress || assetManagerEscrowContract.address,
+    crowdsaleETHAddress: (contractAddress) => contractAddress || crowdsaleETHContract.address,
+    crowdsaleGeneratorETHAddress: (contractAddress) => contractAddress || crowdsaleGeneratorETHContract.address,
+    crowdsaleERC20Address: (contractAddress) => contractAddress || crowdsaleERC20Contract.address,
+    crowdsaleGeneratorERC20CAddress: (contractAddress) => contractAddress|| crowdsaleGeneratorERC20Contract.address,
+    assetGeneratorAddress: (contractAddress) => contractAddress ||assetGeneratorContract.address,
+    assetExchangeAddress: (contractAddress) => contractAddress || assetExchangeContract.address,
+    divTokenETHAddress: (contractAddress) => contractAddress || divTokenETHContract.address,
+    divTokenERCAddress: (contractAddress) => contractAddress || divTokenERCContract.address,
+    divTokenInterfaceAddress: (contractAddress) => contractAddress || divTokenInterface.address,
+    erc20InterfaceAddress: (contractAddress) => contractAddress || erc20Interface.address,
 
   }
 
   return {
-    api: async () => {
-      return await apiContract.at(contractsAddresses.apiAddress());
+    api: async (contractAddress) => {
+      return await apiContract.at(contractsAddresses.apiAddress(contractAddress));
     },
 
-    assetExchange: async () => {
-      return await assetExchangeContract.at(contractsAddresses.assetExchangeAddress());
+    assetExchange: async (contractAddress) => {
+      return await assetExchangeContract.at(contractsAddresses.assetExchangeAddress(contractAddress));
     },
 
-    assetGenerator: async () => {
-      return await assetGeneratorContract.at(contractsAddresses.assetGeneratorAddress());
+    assetGenerator: async (contractAddress) => {
+      return await assetGeneratorContract.at(contractsAddresses.assetGeneratorAddress(contractAddress));
     },
 
-    contractManager: async () => {
-      return await contractManagerContract.at(contractsAddresses.contractManagerAddress());
+    contractManager: async (contractAddress) => {
+      return await contractManagerContract.at(contractsAddresses.contractManagerAddress(contractAddress));
     },
 
-    crowdsaleETH: async () => {
-      return await crowdsaleETHContract.at(contractsAddresses.crowdsaleETHAddress());
+    crowdsaleETH: async (contractAddress) => {
+      return await crowdsaleETHContract.at(contractsAddresses.crowdsaleETHAddress(contractAddress));
     },
 
-    crowdsaleERC20: async () => {
-      return await crowdsaleERC20Contract.at(contractsAddresses.crowdsaleERC20Address());
+    crowdsaleERC20: async (contractAddress) => {
+      return await crowdsaleERC20Contract.at(contractsAddresses.crowdsaleERC20Address(contractAddress));
     },
 
-    crowdsaleGeneratorETH: async () => {
-      return await crowdsaleGeneratorETHContract.at(contractsAddresses.crowdsaleGeneratorETHAddress());
+    crowdsaleGeneratorETH: async (contractAddress) => {
+      return await crowdsaleGeneratorETHContract.at(contractsAddresses.crowdsaleGeneratorETHAddress(contractAddress));
     },
 
-    crowdsaleGeneratorERC20: async () => {
-      return await crowdsaleGeneratorERC20Contract.at(contractsAddresses.crowdsaleGeneratorERC20CAddress());
+    crowdsaleGeneratorERC20: async (contractAddress) => {
+      return await crowdsaleGeneratorERC20Contract.at(contractsAddresses.crowdsaleGeneratorERC20CAddress(contractAddress));
     },
 
-    database: async () => {
-      return await databaseContract.at(contractsAddresses.databaseAddress());
+    database: async (contractAddress) => {
+      return await databaseContract.at(contractsAddresses.databaseAddress(contractAddress));
     },
 
     dividendTokenETH: async (tokenAddress) => {
@@ -132,16 +132,16 @@ module.exports = (function (){
       return await mybitContract.at(tokenAddress);
     },
 
-    erc20Burner: async () => {
-      return await erc20BurnerContract.at(contractsAddresses.erc20BurnerAddress());
+    erc20Burner: async (contractAddress) => {
+      return await erc20BurnerContract.at(contractsAddresses.erc20BurnerAddress(contractAddress));
     },
 
-    operators: async () => {
-      return await operatorsContract.at(contractsAddresses.operatorsAddress());
+    operators: async (contractAddress) => {
+      return await operatorsContract.at(contractsAddresses.operatorsAddress(contractAddress));
     },
 
-    platformFunds: async () => {
-      return await platformFundsContract.at(contractsAddresses.platformFundsAddress());
+    platformFunds: async (contractAddress) => {
+      return await platformFundsContract.at(contractsAddresses.platformFundsAddress(contractAddress));
     },
 
     approveBurn: async (fromAddress) => {
@@ -154,8 +154,8 @@ module.exports = (function (){
       return true;
     },
 
-    addOperator: async (account, name, owner) => {
-      instance = await operatorsContract.at(contractsAddresses.operatorsAddress());
+    addOperator: async (account, name, owner, contractAddress) => {
+      instance = await operatorsContract.at(contractsAddresses.operatorsAddress(contractAddress));
       tx = await instance.registerOperator(account, name, {from: owner});
       return tx.logs[0].args._operatorID;
     },
@@ -199,13 +199,13 @@ module.exports = (function (){
       return instance;
     },
 
-    fundAsset: async (object) => {
+    fundAsset: async (object, crowdsaleETHAddress, crowdsaleERC20Address) => {
       if(object.fundingToken === undefined){
-        instance = await crowdsaleETHContract.at(contractsAddresses.crowdsaleETHAddress());
+        instance = await crowdsaleETHContract.at(contractsAddresses.crowdsaleETHAddress(crowdsaleETHAddress));
         tx = await instance.buyAssetOrderETH(object.assetID, {from: object.address, value: object.amount, gas:2300000});
         return tx.tx;
       } else {
-        instance = await crowdsaleERC20Contract.at(contractsAddresses.crowdsaleERC20Address());
+        instance = await crowdsaleERC20Contract.at(contractsAddresses.crowdsaleERC20Address(crowdsaleERC20Address));
         tx = await instance.buyAssetOrderERC20(object.assetID, object.amount, {from: object.address, gas:2300000});
         return tx.tx;
       }
@@ -250,11 +250,11 @@ module.exports = (function (){
       }
     },
 
-    getAssetsByInvestor: async (address) => {
+    getAssetsByInvestor: async (address, crowdsaleETHAddress, crowdsaleERC20Address) => {
       var assets = [];
-      var crowdsaleETHInstance = await crowdsaleETHContract.at(contractsAddresses.crowdsaleETHAddress());
+      var crowdsaleETHInstance = await crowdsaleETHContract.at(contractsAddresses.crowdsaleETHAddress(crowdsaleETHAddress));
       getAssets(crowdsaleETHInstance);
-      var crowdsaleERCInstance = await crowdsaleERC20Contract.at(contractsAddresses.crowdsaleERC20Address());
+      var crowdsaleERCInstance = await crowdsaleERC20Contract.at(contractsAddresses.crowdsaleERC20Address(crowdsaleERC20Address));
       getAssets(crowdsaleERCInstance);
 
       function getAssets(instance){
@@ -270,11 +270,11 @@ module.exports = (function (){
       return assets;
     },
 
-    getAssetsByManager: async (address) => {
+    getAssetsByManager: async (address, crowdsaleGeneratorETHAddress, crowdsaleGeneratorERC20CAddress ) => {
       var assets = [];
-      var crowdsaleGenETHInstance = await crowdsaleGeneratorETHContract.at(contractsAddresses.crowdsaleGeneratorETHAddress());
+      var crowdsaleGenETHInstance = await crowdsaleGeneratorETHContract.at(contractsAddresses.crowdsaleGeneratorETHAddress(crowdsaleGeneratorETHAddress));
       getAssets(crowdsaleGenETHInstance);
-      var crowdsaleGenERCInstance = await crowdsaleGeneratorERC20Contract.at(contractsAddresses.crowdsaleGeneratorERC20CAddress());
+      var crowdsaleGenERCInstance = await crowdsaleGeneratorERC20Contract.at(contractsAddresses.crowdsaleGeneratorERC20CAddress(crowdsaleGeneratorERC20CAddress));
       getAssets(crowdsaleGenERCInstance);
 
       function getAssets(instance){
@@ -290,12 +290,12 @@ module.exports = (function (){
       return assets;
     },
 
-    getAssetsByOperator: async (address) => {
+    getAssetsByOperator: async (address, apiAddress, crowdsaleGeneratorETHAddress, crowdsaleGeneratorERC20CAddress) => {
       var assets = [];
-      var apiInstance = await apiContract.at(contractsAddresses.apiAddress());
-      var crowdsaleGenETHInstance = await crowdsaleGeneratorETHContract.at(contractsAddresses.crowdsaleGeneratorETHAddress());
+      var apiInstance = await apiContract.at(contractsAddresses.apiAddress(apiAddress));
+      var crowdsaleGenETHInstance = await crowdsaleGeneratorETHContract.at(contractsAddresses.crowdsaleGeneratorETHAddress(crowdsaleGeneratorETHAddress));
       await getAssets(crowdsaleGenETHInstance);
-      var crowdsaleGenERCInstance = await crowdsaleGeneratorERC20Contract.at(contractsAddresses.crowdsaleGeneratorERC20CAddress());
+      var crowdsaleGenERCInstance = await crowdsaleGeneratorERC20Contract.at(contractsAddresses.crowdsaleGeneratorERC20CAddress(crowdsaleGeneratorERC20CAddress));
       await getAssets(crowdsaleGenERCInstance);
 
       async function getAssets(instance){
@@ -313,11 +313,11 @@ module.exports = (function (){
       return assets;
     },
 
-    getTotalAssets: async () => {
+    getTotalAssets: async (crowdsaleGeneratorETHAddress, crowdsaleGeneratorERC20CAddress) => {
       var assets = [];
-      var crowdsaleGenETHInstance = await crowdsaleGeneratorETHContract.at(contractsAddresses.crowdsaleGeneratorETHAddress());
+      var crowdsaleGenETHInstance = await crowdsaleGeneratorETHContract.at(contractsAddresses.crowdsaleGeneratorETHAddress(crowdsaleGeneratorETHAddress));
       getAssets(crowdsaleGenETHInstance);
-      var crowdsaleGenERCInstance = await crowdsaleGeneratorERC20Contract.at(contractsAddresses.crowdsaleGeneratorERC20CAddress());
+      var crowdsaleGenERCInstance = await crowdsaleGeneratorERC20Contract.at(contractsAddresses.crowdsaleGeneratorERC20CAddress(crowdsaleGeneratorERC20CAddress));
       getAssets(crowdsaleGenERCInstance);
 
       function getAssets(instance){
@@ -333,12 +333,12 @@ module.exports = (function (){
       return assets;
     },
 
-    getOpenCrowdsales: async () => {
+    getOpenCrowdsales: async (apiAddress, crowdsaleGeneratorETHAddress, crowdsaleGeneratorERC20CAddress) => {
       var assets = [];
-      var apiInstance = await apiContract.at(contractsAddresses.apiAddress());
-      var crowdsaleGenETHInstance = await crowdsaleGeneratorETHContract.at(contractsAddresses.crowdsaleGeneratorETHAddress());
+      var apiInstance = await apiContract.at(contractsAddresses.apiAddress(apiAddress));
+      var crowdsaleGenETHInstance = await crowdsaleGeneratorETHContract.at(contractsAddresses.crowdsaleGeneratorETHAddress(crowdsaleGeneratorETHAddress));
       await getAssets(crowdsaleGenETHInstance);
-      var crowdsaleGenERCInstance = await crowdsaleGeneratorERC20Contract.at(contractsAddresses.crowdsaleGeneratorERC20CAddress());
+      var crowdsaleGenERCInstance = await crowdsaleGeneratorERC20Contract.at(contractsAddresses.crowdsaleGeneratorERC20CAddress(crowdsaleGeneratorERC20CAddress));
       await getAssets(crowdsaleGenERCInstance);
 
       async function getAssets(instance) {
@@ -361,8 +361,8 @@ module.exports = (function (){
       return assets;
     },
 
-    getFundingTimeLeft: async (assetID) => {
-      var instance = await apiContract.at(contractsAddresses.apiAddress());
+    getFundingTimeLeft: async (assetID, apiAddress) => {
+      var instance = await apiContract.at(contractsAddresses.apiAddress(apiAddress));
       var deadline = Number(await instance.getAssetFundingDeadline(assetID));
       var now = Math.round(new Date().getTime()/1000); //Current time in seconds;
       var timeleft;
@@ -374,8 +374,8 @@ module.exports = (function (){
       return timeleft
     },
 
-    getFundingGoal: async (assetID) => {
-      var apiInstance = await apiContract.at(contractsAddresses.apiAddress());
+    getFundingGoal: async (assetID, apiAddress) => {
+      var apiInstance = await apiContract.at(contractsAddresses.apiAddress(apiAddress));
       var finalized = await apiInstance.crowdsaleFinalized(assetID);
       var goal;
 
@@ -390,31 +390,31 @@ module.exports = (function (){
       return goal;
     },
 
-    getFundingProgress: async (assetID) => {
-      var apiInstance = await apiContract.at(contractsAddresses.apiAddress());
+    getFundingProgress: async (assetID, apiAddress) => {
+      var apiInstance = await apiContract.at(contractsAddresses.apiAddress(apiAddress));
       var tokenAddress = await apiInstance.getAssetAddress(assetID);
       var tokenInstance = await divTokenInterface.at(tokenAddress);
       var progress = Number(await tokenInstance.totalSupply());
       return progress;
     },
 
-    getAssetOperator: async (assetID) => {
-      var apiInstance = await apiContract.at(contractsAddresses.apiAddress());
+    getAssetOperator: async (assetID, apiAddress) => {
+      var apiInstance = await apiContract.at(contractsAddresses.apiAddress(apiAddress));
       var operator = await apiInstance.getAssetOperator(assetID);
       return operator;
     },
 
-    getAssetManager: async (assetID) => {
-      var apiInstance = await apiContract.at(contractsAddresses.apiAddress());
+    getAssetManager: async (assetID, apiAddress) => {
+      var apiInstance = await apiContract.at(contractsAddresses.apiAddress(apiAddress));
       var manager = await apiInstance.getAssetManager(assetID);
       return manager;
     },
 
-    getAssetInvestors: async (assetID) => {
+    getAssetInvestors: async (assetID, crowdsaleETHAddress, crowdsaleERC20Address) => {
       var investors = [];
-      var crowdsaleETHInstance = await crowdsaleETHContract.at(contractsAddresses.crowdsaleETHAddress());
+      var crowdsaleETHInstance = await crowdsaleETHContract.at(contractsAddresses.crowdsaleETHAddress(crowdsaleETHAddress));
       getInvestors(crowdsaleETHInstance);
-      var crowdsaleERCInstance = await crowdsaleERC20Contract.at(contractsAddresses.crowdsaleERC20Address());
+      var crowdsaleERCInstance = await crowdsaleERC20Contract.at(contractsAddresses.crowdsaleERC20Address(crowdsaleERC20Address));
       getInvestors(crowdsaleERCInstance);
 
       function getInvestors(instance){
