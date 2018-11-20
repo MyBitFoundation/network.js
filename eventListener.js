@@ -15,7 +15,7 @@ class Web3EventsListener {
     }
 
     setEvent (type, params, cb, eventEmitter) {
-      this.web3Instance = !this.web3Instance ? new Web3(new Web3.providers.WebsocketProvider('wss://ropsten.infura.io/ws')) : this.web3Instance
+      this.web3Instance = !this.web3Instance ? new Web3(new Web3(new Web3.providers.WebsocketProvider('wss://ropsten.infura.io/ws'))) : this.web3Instance
 
       const errCb = (err) => {
         /* eslint no-console: ["error", { allow: ["log", "error"] }] */
