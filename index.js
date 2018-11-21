@@ -1,5 +1,5 @@
 const ContractArtifacts = require("@mybit/contracts");
-const Chain = require("@mybit/chain");
+const Chain = require("@mybit/network-chain");
 const Web3 = require("web3");
 const TruffleContract = require("truffle-contract");
 const Promisify = (inner) =>
