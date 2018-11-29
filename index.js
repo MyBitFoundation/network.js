@@ -17,6 +17,7 @@ const Promisify = (inner) =>
 
 function contract(artifact){
   var c = TruffleContract(artifact);
+  
   c.setProvider(web3.currentProvider);
   c.currentProvider.sendAsync = function () {
     return c.currentProvider.send.apply(c.currentProvider, arguments);
@@ -80,7 +81,6 @@ module.exports = (function (){
     divTokenERCAddress: (contractAddress) => contractAddress || divTokenERCContract.address,
     divTokenInterfaceAddress: (contractAddress) => contractAddress || divTokenInterface.address,
     erc20InterfaceAddress: (contractAddress) => contractAddress || erc20Interface.address,
-
   }
 
   return {
@@ -161,14 +161,14 @@ module.exports = (function (){
     },
 
     acceptEther: async (id, operatorAddress) => {
-      instance = await operatorsContract.at(contractsAddresses.operatorsAddress());
-      await instance.acceptEther(id, true, {from: operatorAddress});
+      instance = await operatorsContract.at(contractsAddresses.operatorsAddress(operatorAddress));
+      await instance.acceptEther(id, true, {from: contractsAddresses.operatorsAddress(operatorAddress)});
       return true;
     },
 
     acceptERC20Token: async (id, tokenAddress, operatorAddress) => {
-      instance = await operatorsContract.at(contractsAddresses.operatorsAddress());
-      await instance.acceptERC20Token(id, tokenAddress, true, {from: operatorAddress});
+      instance = await operatorsContract.at(contractsAddresses.operatorsAddress(operatorAddress));
+      await instance.acceptERC20Token(id, tokenAddress, true, {from: contractsAddresses.operatorsAddress(operatorAddress)});
       return true;
     },
 
@@ -430,6 +430,9 @@ module.exports = (function (){
       return investors;
     },
 
-    getWeb3EventsListener: () => new Web3EventsListener(),
+    getWeb3EventsListener: (providerNet) => {
+      const eventListener =  new Web3EventsListener(providerNet)
+      return eventListener
+    }
   }
 })();
