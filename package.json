@@ -19,9 +19,9 @@
   },
   "homepage": "https://github.com/MyBitFoundation/MyBit-Network.website#readme",
   "dependencies": {
-    "@mybit/network-chain": "^0.1.11",
-    "@mybit/contracts": "^0.1.9",
-    "truffle-contract": "^3.0.6",
-    "web3": "^1.0.0-beta.36"
+    "@mybit/contracts": "0.1.11",
+    "@mybit/network-chain": "0.1.15",
+    "truffle-contract": "3.0.6",
+    "web3": "1.0.0-beta.36"
   }
 }
