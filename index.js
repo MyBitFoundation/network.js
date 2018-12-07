@@ -1,6 +1,5 @@
 const ContractArtifacts = require("@mybit/contracts");
 const TruffleContract = require("truffle-contract");
-const Web3EventsListener = require("./eventListener");
 
 const Promisify = (inner) =>
     new Promise((resolve, reject) =>
@@ -528,10 +527,5 @@ module.exports = function (web3, contractsAddresses){
 
       return investors;
     },
-
-    getWeb3EventsListener: (providerNet) => {
-      const eventListener = new Web3EventsListener(providerNet)
-      return eventListener
-    }
   }
 };
