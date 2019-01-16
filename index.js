@@ -24,6 +24,7 @@ module.exports = function (web3, contractsAddresses){
   }
   //Event functions
   async function getTransactionEvent(_message, _from, _to, _fromBlock){
+    initEventsContract();
     events = await eventsContract.at(contractsAddresses.Events);
     e = events.LogTransaction({messageID: web3.utils.sha3(_message), from: _from, to: _to}, {fromBlock: _fromBlock, toBlock: 'latest'});
     logs = await Promisify(callback => e.get(callback));
@@ -31,6 +32,7 @@ module.exports = function (web3, contractsAddresses){
   };
 
   async function getAssetEvent(_message, _manager, _fromBlock){
+    initEventsContract();
     events = await eventsContract.at(contractsAddresses.Events);
     e = events.LogAsset({messageID: web3.utils.sha3(_message), manager: _manager}, {fromBlock: _fromBlock, toBlock: 'latest'});
     logs = await Promisify(callback => e.get(callback));
@@ -38,6 +40,7 @@ module.exports = function (web3, contractsAddresses){
   };
 
   async function getOperatorEvent(_message, _origin, _fromBlock){
+    initEventsContract();
     events = await eventsContract.at(contractsAddresses.Events);
     e = events.LogOperator({messageID: web3.utils.sha3(_message), origin: _origin}, {fromBlock: _fromBlock, toBlock: 'latest'});
     logs = await Promisify(callback => e.get(callback));
@@ -293,6 +296,7 @@ module.exports = function (web3, contractsAddresses){
 
     //Create a dividend token (tradeable or non-tradeable) for an asset already operating
     tokenizeAsset: async (object) => {
+      initAssetGeneratorContract();
       instance = await assetGeneratorContract.at(contractsAddresses.AssetGenerator);
       block = await web3.eth.getBlock('latest');
       if(object.tradeable == true){
@@ -385,8 +389,6 @@ module.exports = function (web3, contractsAddresses){
 
     //View the assets an investor has invested in. (This may not represent their current stake, just crowdsales they have contributed to)
     getAssetsByInvestor: async (address) => {
-      initCrowdsaleETHContract();
-      initCrowdsaleERC20Contract();
       var assets = [];
       var logs = await getTransactionEvent('Asset purchased', address, undefined, 0);
       logs.forEach(function (log, index) {
@@ -399,8 +401,6 @@ module.exports = function (web3, contractsAddresses){
 
     //View assets created by an asset manager
     getAssetsByManager: async (address) => {
-      initCrowdsaleGeneratorETHContract();
-      initCrowdsaleGeneratorERC20Contract();
       var assets = [];
       var logs = await getAssetEvent('Asset funding started', address, 0);
       logs.forEach(function (log, index) {
@@ -414,8 +414,6 @@ module.exports = function (web3, contractsAddresses){
     //View assets by operator
     getAssetsByOperator: async (address) => {
       initApiContract();
-      initCrowdsaleGeneratorETHContract();
-      initCrowdsaleGeneratorERC20Contract()
       var assets = [];
       var apiInstance = await apiContract.at(contractsAddresses.API);
       var logs = await getAssetEvent('Asset funding started', undefined, 0);
@@ -432,8 +430,6 @@ module.exports = function (web3, contractsAddresses){
 
     //View all assets
     getTotalAssets: async () => {
-      initCrowdsaleGeneratorETHContract();
-      initCrowdsaleGeneratorERC20Contract();
       var assets = [];
       var logs = await getAssetEvent('Asset funding started', undefined, 0);
       logs.forEach(function (log, index) {
@@ -447,8 +443,6 @@ module.exports = function (web3, contractsAddresses){
     //View assets by the open crowdsales
     getOpenCrowdsales: async () => {
       initApiContract();
-      initCrowdsaleGeneratorETHContract();
-      initCrowdsaleGeneratorERC20Contract();
       var assets = [];
       var apiInstance = await apiContract.at(contractsAddresses.API);
       var logs = await getAssetEvent('Asset funding started', undefined, 0);
@@ -528,8 +522,6 @@ module.exports = function (web3, contractsAddresses){
 
     //Get an asset's investors
     getAssetInvestors: async (asset) => {
-      initCrowdsaleETHContract();
-      initCrowdsaleERC20Contract();
       var investors = [];
       var logs = await getTransactionEvent('Asset purchased', undefined, undefined, 0);
       logs.forEach(function (log, index) {
