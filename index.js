@@ -1,6 +1,7 @@
 const Contracts = require("@mybit/contracts");
 const Artifacts = Contracts.artifacts;
 const TruffleContract = require("truffle-contract");
+const bn = require("bignumber.js");
 
 const Promisify = (inner) =>
     new Promise((resolve, reject) =>
@@ -274,7 +275,7 @@ module.exports = function (web3, contractsAddresses){
 
     //Create a new asset and begin a crowdsale to fund the asset. Tokens representing shares are paid out to investors
     createAsset: async (object) => {
-      if(object.escrow > 0){
+      if(bn(object.escrow).isGreaterThan(0)){
         //Get approval to transfer tokens to AssetManagerEscrow
         initMyBitContract();
         tokenInstance = await mybitContract.at(contractsAddresses.MyBitToken);
@@ -354,8 +355,8 @@ module.exports = function (web3, contractsAddresses){
       var iDivTokenInstance = await divTokenInterface.at(asset);
       var erc20Address = await iDivTokenInstance.getERC20();
       if(erc20Address == '0x0000000000000000000000000000000000000000'){
-        var balance = await web3.eth.getBalance(account);
-        if(balance >= amount){
+        var balance = bn(await web3.eth.getBalance(account));
+        if(balance.isGreaterThanOrEqualTo(amount)){
           try{
             var tokenInstance = await divTokenETHContract.at(asset);
             await tokenInstance.issueDividends({from:account, value:amount, gas: 220000});
@@ -370,8 +371,8 @@ module.exports = function (web3, contractsAddresses){
         }
       } else {
         var iERC20Instance = await erc20Interface.at(erc20Address);
-        var balance = await iERC20Instance.balanceOf(account);
-        if(balance >= amount){
+        var balance = bn(await iERC20Instance.balanceOf(account));
+        if(balance.isGreaterThanOrEqualTo(amount)){
           try{
             var tokenInstance = await divTokenERCContract.at(asset);
             await tokenInstance.issueDividends(amount, {from:account, gas: 220000});
@@ -450,9 +451,9 @@ module.exports = function (web3, contractsAddresses){
         var asset = logs[i].args.asset;
         var finalized = await apiInstance.crowdsaleFinalized(asset);
         if(!finalized){
-          var deadline = Number(await apiInstance.getCrowdsaleDeadline(asset));
+          var deadline = bn(await apiInstance.getCrowdsaleDeadline(asset));
           var now = Math.round(new Date().getTime()/1000); //Current time in seconds;
-          if(deadline > now){
+          if(deadline.isGreaterThan(now)){
             assets.push(asset);
           }
         }
@@ -465,10 +466,11 @@ module.exports = function (web3, contractsAddresses){
     getFundingTimeLeft: async (asset) => {
       initApiContract();
       var instance = await apiContract.at(contractsAddresses.API);
-      var deadline = Number(await instance.getCrowdsaleDeadline(asset));
+      var finalized = await instance.crowdsaleFinalized(asset);
+      var deadline = bn(await instance.getCrowdsaleDeadline(asset));
       var now = Math.round(new Date().getTime()/1000); //Current time in seconds;
       var timeleft;
-      if(deadline > now){
+      if(deadline.isGreaterThan(now) && !finalized){
         timeleft = deadline - now;
       } else {
         timeleft = 0;
