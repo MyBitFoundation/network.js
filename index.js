@@ -50,7 +50,7 @@ module.exports = function (web3, contractsAddresses){
   //Setup contracts
   let apiContract, mybitContract, erc20BurnerContract, databaseContract, eventsContract,
       contractManagerContract, singleOwnerContract, pausibleContract, accessHierarchyContract,
-      platformFundsContract, operatorsContract, assetManagerEscrowContract, crowdsaleETHContract,
+      platformContract, operatorsContract, assetManagerEscrowContract, crowdsaleETHContract,
       crowdsaleGeneratorETHContract, crowdsaleERC20Contract, crowdsaleGeneratorERC20Contract,
       assetGeneratorContract, assetExchangeContract, divTokenETHContract, divTokenERCContract,
       divTokenInterface, erc20Interface;
@@ -92,8 +92,8 @@ module.exports = function (web3, contractsAddresses){
     accessHierarchyContract = accessHierarchyContract || contract(Artifacts.AccessHierarchy);
   }
 
-  const initPlatformFundsContract = () => {
-    platformFundsContract = platformFundsContract || contract(Artifacts.PlatformFunds);
+  const initPlatformContract = () => {
+    platformContract = platformContract || contract(Artifacts.Platform);
   }
 
   const initOperatorsContract = () => {
@@ -102,6 +102,10 @@ module.exports = function (web3, contractsAddresses){
 
   const initAssetManagerEscrowContract = () => {
     assetManagerEscrowContract = assetManagerEscrowContract || contract(Artifacts.AssetManagerEscrow);
+  }
+
+  const initAssetGoveranceContract = () => {
+    assetGoveranceContract = assetGoveranceContract || contract(Artifacts.AssetGoverance);
   }
 
   const initCrowdsaleETHContract= () => {
@@ -160,13 +164,9 @@ module.exports = function (web3, contractsAddresses){
       return await assetGeneratorContract.at(contractsAddresses.AssetGenerator);
     },
 
-    assetGovernance: async () => {
-      return await assetGovernanceContract.at(contractsAddresses.AssetGovernance);
-    },
-
     assetManagerEscrow: async () => {
       initAssetManagerEscrowContract();
-      return await assetManagerEscrowContract.at(contractsAddresses.BrokerEscrow);
+      return await assetManagerEscrowContract.at(contractsAddresses.AssetManagerEscrow);
     },
 
     contractManager: async () => {
@@ -229,9 +229,9 @@ module.exports = function (web3, contractsAddresses){
       return await operatorsContract.at(contractsAddresses.Operators);
     },
 
-    platformFunds: async () => {
-      initPlatformFundsContract();
-      return await platformFundsContract.at(contractsAddresses.PlatformFunds);
+    platform: async () => {
+      initPlatformContract();
+      return await platformContract.at(contractsAddresses.Platform);
     },
 
     //Approve the burning of MyBit on the MyBit Go Platform
