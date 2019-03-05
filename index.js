@@ -279,16 +279,17 @@ module.exports = function (web3, contractsAddresses){
         //Get approval to transfer tokens to AssetManagerEscrow
         initMyBitContract();
         tokenInstance = await mybitContract.at(contractsAddresses.MyBitToken);
-        await tokenInstance.approve(contractsAddresses.AssetManagerEscrow, object.escrow, {from: object.assetManager});
       }
       block = await web3.eth.getBlock('latest');
       if(object.fundingToken === undefined){
         initCrowdsaleGeneratorETHContract();
         instance = await crowdsaleGeneratorETHContract.at(contractsAddresses.CrowdsaleGeneratorETH);
+        if(object.escrow > 0) await tokenInstance.approve(contractsAddresses.CrowdsaleGeneratorETH, object.escrow, {from: object.assetManager});
         await instance.createAssetOrderETH(object.assetURI, object.assetManager, object.operatorID, object.fundingLength, object.startTime, object.amountToRaise, object.assetManagerPercent, object.escrow, {from: object.assetManager, gas:2300000});
       } else {
         initCrowdsaleGeneratorERC20Contract();
         instance = await crowdsaleGeneratorERC20Contract.at(contractsAddresses.CrowdsaleGeneratorERC20);
+        if(object.escrow > 0) await tokenInstance.approve(contractsAddresses.CrowdsaleGeneratorERC20, object.escrow, {from: object.assetManager});
         await instance.createAssetOrderERC20(object.assetURI, object.assetManager, object.operatorID, object.fundingLength, object.startTime, object.amountToRaise, object.assetManagerPercent, object.escrow, object.fundingToken, {from: object.assetManager, gas:6700000});
       }
       logs = await getAssetEvent('Asset funding started', object.assetManager, block.number);
