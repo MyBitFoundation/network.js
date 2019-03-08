@@ -32,10 +32,10 @@ module.exports = function (web3, contractsAddresses){
     return logs;
   };
 
-  async function getAssetEvent(_message, _manager, _fromBlock){
+  async function getAssetEvent(_message, _uri, _fromBlock){
     initEventsContract();
     events = await eventsContract.at(contractsAddresses.Events);
-    e = events.LogAsset({messageID: web3.utils.sha3(_message), manager: _manager}, {fromBlock: _fromBlock, toBlock: 'latest'});
+    e = events.LogAsset({messageID: web3.utils.sha3(_message), assetID: web3.utils.sha3(_uri)}, {fromBlock: _fromBlock, toBlock: 'latest'});
     logs = await Promisify(callback => e.get(callback));
     return logs;
   };
@@ -292,7 +292,7 @@ module.exports = function (web3, contractsAddresses){
         if(object.escrow > 0) await tokenInstance.approve(contractsAddresses.CrowdsaleGeneratorERC20, object.escrow, {from: object.assetManager});
         await instance.createAssetOrderERC20(object.assetURI, object.assetManager, object.operatorID, object.fundingLength, object.startTime, object.amountToRaise, object.assetManagerPercent, object.escrow, object.fundingToken, {from: object.assetManager, gas:6700000});
       }
-      logs = await getAssetEvent('Asset funding started', object.assetManager, block.number);
+      logs = await getAssetEvent('Asset funding started', object.assetURI, block.number);
       return logs[logs.length-1].args;
     },
 
@@ -303,10 +303,10 @@ module.exports = function (web3, contractsAddresses){
       block = await web3.eth.getBlock('latest');
       if(object.tradeable == true){
         await instance.createTradeableAsset(object.assetURI, object.assetManager, object.tokenHolders, object.tokenAmounts, {from: object.assetManager, gas:2000000});
-        logs = await getAssetEvent('Asset created', object.assetManager, block.number);
+        logs = await getAssetEvent('Asset created', object.assetURI, block.number);
       } else {
         await instance.createAsset(object.assetURI, object.assetManager, object.tokenHolders, object.tokenAmounts, {from: object.assetManager, gas:2000000});
-        logs = await getAssetEvent('Asset created', object.assetManager, block.number);
+        logs = await getAssetEvent('Asset created', object.assetURI, block.number);
       }
       return logs[logs.length-1].args;
     },
@@ -404,11 +404,14 @@ module.exports = function (web3, contractsAddresses){
     //View assets created by an asset manager
     getAssetsByManager: async (address) => {
       var assets = [];
-      var logs = await getAssetEvent('Asset funding started', address, 0);
-      logs.forEach(function (log, index) {
-        var asset = log.args.asset;
-        assets.push(asset);
-      });
+      var logs = await getAssetEvent('Asset funding started', undefined, 0);
+      for(var i=0; i<logs.length; i++){
+        var asset = logs[i].args.asset;
+        var manager = await apiInstance.getAssetManager(asset);
+        if(address.toLowerCase() == manager.toLowerCase()){
+          assets.push(asset);
+        }
+      }
 
       return assets;
     },
