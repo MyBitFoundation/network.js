@@ -124,12 +124,14 @@ async function contribute(_asset, _amount, _account, _paymentToken){
       } else {
         parameters.paymentToken = fundingToken;
       }
-      var token = await network.erc20(parameters.paymentToken);
-      token.methods.approve(addresses.CrowdsaleERC20, _amount).send({from: _account});
+      //var token = await network.erc20(parameters.paymentToken);
+      //token.methods.approve(addresses.CrowdsaleERC20, _amount).send({from: _account});
     }
 
-    await network.approveBurn({from: _account});
-    await network.fundAsset(parameters);
+    let receipt = await network.approveBurn({from: _account});
+    console.log(receipt.transactionHash)
+    receipt = await network.fundAsset(parameters);
+    console.log(receipt.transactionHash)
     console.log('Contributed ', _amount/decimals);
   } else {
     console.log('Crowdsale already finished!');

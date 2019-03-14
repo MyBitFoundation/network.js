@@ -16,7 +16,7 @@ describe('Network.js', function() {
     });
 
     it('Should return an object', function() {
-      addresses = Contracts.addresses.mybit();
+      addresses = Contracts.addresses.mybit;
       assert.equal(typeof addresses, 'object');
     });
 
@@ -46,13 +46,13 @@ describe('Network.js', function() {
     });
 
     it('Should send MYB token to all accounts', async function() {
-      myb = await network.erc20(addresses.MyBitToken);
-      let balance = await myb.balanceOf(accounts[1]);
+      myb = await network.myBitToken();
+      let balance = bn(await myb.methods.balanceOf(accounts[1]).call());
       if(balance.toNumber() == 0){
         let tokenPerAccount = await web3.utils.toWei('1000', 'ether');
         //Give 100 MyB tokens to all accounts
         for(var i=1; i<accounts.length; i++){
-          await myb.transfer(accounts[i], tokenPerAccount, {from: accounts[0]});
+          await myb.methods.transfer(accounts[i], tokenPerAccount).send({from: accounts[0]});
         }
       }
     });
@@ -61,112 +61,124 @@ describe('Network.js', function() {
   describe('Instaniate Contracts', function() {
     it('Should create an API contract object', async function(){
       let api = await network.api();
-      assert.equal(api.address, addresses.API);
+      assert.equal(api.options.address, addresses.API);
     });
 
     it('Should create an AssetExchange contract object', async function(){
       let assetExchange = await network.assetExchange();
-      assert.equal(assetExchange.address, addresses.AssetExchange);
+      assert.equal(assetExchange.options.address, addresses.AssetExchange);
     });
 
     it('Should create an AssetGenerator contract object', async function(){
       let assetGenerator = await network.assetGenerator();
-      assert.equal(assetGenerator.address, addresses.AssetGenerator);
+      assert.equal(assetGenerator.options.address, addresses.AssetGenerator);
     });
 
     it('Should create an AssetManagerEscrow contract object', async function(){
       let assetManagerEscrow = await network.assetManagerEscrow();
-      assert.equal(assetManagerEscrow.address, addresses.AssetManagerEscrow);
+      assert.equal(assetManagerEscrow.options.address, addresses.AssetManagerEscrow);
     });
 
     it('Should create a ContractManager contract object', async function(){
       let contractManager = await network.contractManager();
-      assert.equal(contractManager.address, addresses.ContractManager);
+      assert.equal(contractManager.options.address, addresses.ContractManager);
     });
 
     it('Should create a CrowdsaleETH contract object', async function(){
       let crowdsaleETH = await network.crowdsaleETH();
-      assert.equal(crowdsaleETH.address, addresses.CrowdsaleETH);
+      assert.equal(crowdsaleETH.options.address, addresses.CrowdsaleETH);
     });
 
     it('Should create a CrowdsaleERC20 contract object', async function(){
       let crowdsaleERC20 = await network.crowdsaleERC20();
-      assert.equal(crowdsaleERC20.address, addresses.CrowdsaleERC20);
+      assert.equal(crowdsaleERC20.options.address, addresses.CrowdsaleERC20);
     });
 
     it('Should create a CrowdsaleGeneratorETH contract object', async function(){
       let crowdsaleGeneratorETH = await network.crowdsaleGeneratorETH();
-      assert.equal(crowdsaleGeneratorETH.address, addresses.CrowdsaleGeneratorETH);
+      assert.equal(crowdsaleGeneratorETH.options.address, addresses.CrowdsaleGeneratorETH);
     });
 
     it('Should create a CrowdsaleGeneratorERC20 contract object', async function(){
       let crowdsaleGeneratorERC20 = await network.crowdsaleGeneratorERC20();
-      assert.equal(crowdsaleGeneratorERC20.address, addresses.CrowdsaleGeneratorERC20);
+      assert.equal(crowdsaleGeneratorERC20.options.address, addresses.CrowdsaleGeneratorERC20);
     });
 
     it('Should create a Database contract object', async function(){
       let database = await network.database();
-      assert.equal(database.address, addresses.Database);
+      assert.equal(database.options.address, addresses.Database);
     });
 
     it('Should create a Events contract object', async function(){
       let events = await network.events();
-      assert.equal(events.address, addresses.Events);
+      assert.equal(events.options.address, addresses.Events);
     });
 
     it('Should create a ERC20Burner contract object', async function(){
       let erc20Burner = await network.erc20Burner();
-      assert.equal(erc20Burner.address, addresses.ERC20Burner);
+      assert.equal(erc20Burner.options.address, addresses.ERC20Burner);
     });
 
     it('Should create a Operators contract object', async function(){
       let operators = await network.operators();
-      assert.equal(operators.address, addresses.Operators);
+      assert.equal(operators.options.address, addresses.Operators);
     });
 
     it('Should create a Platform contract object', async function(){
       let platform = await network.platform();
-      assert.equal(platform.address, addresses.Platform);
+      assert.equal(platform.options.address, addresses.Platform);
     });
   });
 
   describe('Onboard Operator', function() {
     it('Should receive an operator ID', async function(){
-      operatorID = await network.addOperator(accounts[3], 'Name operator', 'Asset', accounts[0]);
+      operatorID = await network.addOperator({
+        operator: accounts[3],
+        name: 'Name operator',
+        assetType: 'Asset',
+        owner: accounts[0]
+      });
       assert.equal(operatorID.startsWith('0x'), true);
     });
 
     it('Should accept ether and return true', async function(){
-      let result = await network.acceptEther(operatorID, accounts[3]);
-      assert.equal(result, true);
+      let result = await network.acceptEther({
+        id: operatorID,
+        operator: accounts[3]
+      });
+      assert.equal(result.status, true);
     });
 
     it('Should accept erc20 and return true', async function(){
-      let result = await network.acceptERC20Token(operatorID, addresses.MyBitToken, accounts[3]);
-      assert.equal(result, true);
+      let result = await network.acceptERC20Token({
+        id: operatorID,
+        token: addresses.MyBitToken,
+        operator: accounts[3]
+      });
+      assert.equal(result.status, true);
     });
   });
 
   describe('Onboard User', function() {
     it('Should approve burn and return true', async function(){
-      let result = await network.approveBurn(accounts[4]);
-      assert.equal(result, true);
-      let myb = await network.erc20(addresses.MyBitToken);
-      let amount = await myb.allowance(accounts[4], addresses.ERC20Burner);
+      let result = await network.approveBurn({from: accounts[4]});
+      assert.equal(result.status, true);
+      let myb = await network.myBitToken();
+      let amount = bn(await myb.methods.allowance(accounts[4], addresses.ERC20Burner).call());
       assert.equal(bn(amount).eq(1000000000000000000000000000000), true);
     });
 
     it('Allowance should equal 10^30', async function(){
-      let myb = await network.erc20(addresses.MyBitToken);
-      let amount = await myb.allowance(accounts[4], addresses.ERC20Burner);
+      let myb = await network.myBitToken();
+      let amount = bn(await myb.methods.allowance(accounts[4], addresses.ERC20Burner).call());
       assert.equal(bn(amount).eq(1000000000000000000000000000000), true);
     });
   });
 
   describe('Start ETH & ERC20 Crowdsales', function() {
     it('Should get burning approved', async function() {
-      let result = await network.approveBurn(accounts[2]);
-      assert.equal(result, true);
+      let result = await network.approveBurn({from: accounts[2]});
+      assert.equal(result.status, true);
     });
 
     it('Should receive ETH asset object with asset address', async function(){
@@ -180,6 +192,7 @@ describe('Network.js', function() {
         amountToRaise: amount,
         assetManagerPercent: 0,
         escrow: 0,
+        burnToken: addresses.MyBitToken
       });
 
       ethAsset = result.asset;
@@ -197,7 +210,8 @@ describe('Network.js', function() {
         amountToRaise: amount,
         assetManagerPercent: 0,
         escrow: 0,
-        fundingToken: addresses.MyBitToken
+        fundingToken: addresses.MyBitToken,
+        burnToken: addresses.MyBitToken
       });
 
       erc20Asset = result.asset;
@@ -208,56 +222,60 @@ describe('Network.js', function() {
   describe('Fund assets', function() {
     it('Should fund ethAsset and get a transaction address', async function(){
       let amount = await web3.utils.toWei('1', 'ether');
-      let tx = await network.fundAsset({
+      let result = await network.fundAsset({
         asset: ethAsset,
         investor: accounts[4],
         amount: amount
       });
-
-      assert.equal(tx.startsWith('0x'), true);
+      assert.equal(result.status, true);
+      //assert.equal(result.message, 'Asset purchased');
     });
 
     it('Should fund ethAsset and get a transaction address', async function(){
       let amount = await web3.utils.toWei('1', 'ether');
-      let tx = await network.fundAsset({
+      let result = await network.fundAsset({
         asset: ethAsset,
         investor: accounts[5],
         amount: amount
       });
-
-      assert.equal(tx.startsWith('0x'), true);
+      assert.equal(result.status, true);
+      //assert.equal(result.message, 'Asset purchased');
     });
 
     it('Should have a funded ethAsset', async function(){
-      let finalized = await api.crowdsaleFinalized(ethAsset);
+      let finalized = await api.methods.crowdsaleFinalized(ethAsset).call();
       assert.equal(finalized, true);
     });
 
     it('Should fund erc20Asset and get a transaction address', async function(){
       let amount = await web3.utils.toWei('10', 'ether');
-      await myb.approve(addresses.CrowdsaleERC20, amount, {from: accounts[4]});
-      let tx = await network.fundAsset({
+      await myb.methods.approve(addresses.CrowdsaleERC20, amount).send({from: accounts[4]});
+      let result = await network.fundAsset({
         asset: erc20Asset,
         investor: accounts[4],
         amount: amount,
-        fundingToken: addresses.MyBitToken
+        fundingToken: addresses.MyBitToken,
+        paymentToken: addresses.MyBitToken
       });
-
-      assert.equal(tx.startsWith('0x'), true);
+      assert.equal(result.message, 'Asset purchased');
     });
   });
 
   describe('Issue dividends', function() {
     it('Should send ether to ethAsset', async function() {
       let amount = await web3.utils.toWei('1', 'ether');
-      let result = await network.issueDividends(ethAsset, accounts[3], amount);
-      assert.equal(result, true);
+      let result = await network.issueDividends({
+        asset: ethAsset,
+        account: accounts[3],
+        amount: amount
+      });
+      assert.equal(result.status, true);
     });
 
     it('Should be able to receive income', async function() {
       let divToken = await network.dividendTokenETH(ethAsset);
       let balanceBefore = bn(await web3.eth.getBalance(accounts[4]));
-      await divToken.withdraw({from: accounts[4]});
+      await divToken.methods.withdraw().send({from: accounts[4]});
       let balanceAfter = bn(await web3.eth.getBalance(accounts[4]));
       let diff = balanceAfter.minus(balanceBefore);
       assert.equal(diff.isGreaterThan(0), true);
@@ -355,12 +373,13 @@ describe('Network.js', function() {
   describe('Finish erc20Asset funding and issue dividends', function() {
     it('Should fund erc20Asset and get a transaction address', async function(){
       let amount = await web3.utils.toWei('90', 'ether');
-      await myb.approve(addresses.CrowdsaleERC20, amount, {from: accounts[5]});
+      await myb.methods.approve(addresses.CrowdsaleERC20, amount).send({from: accounts[5]});
       let tx = await network.fundAsset({
         asset: erc20Asset,
         investor: accounts[5],
         amount: amount,
-        fundingToken: addresses.MyBitToken
+        fundingToken: addresses.MyBitToken,
+        paymentToken: addresses.MyBitToken
       });
 
       assert.equal(tx.startsWith('0x'), true);
@@ -368,16 +387,20 @@ describe('Network.js', function() {
 
     it('Should send myb to erc20Asset', async function() {
       let amount = await web3.utils.toWei('10', 'ether');
-      await myb.approve(erc20Asset, amount, {from: accounts[3]});
-      let result = await network.issueDividends(erc20Asset, accounts[3], amount);
+      await myb.methods.approve(erc20Asset, amount).send({from: accounts[3]});
+      let result = await network.issueDividends({
+        asset: erc20Asset,
+        account: accounts[3],
+        amount: amount
+      });
       assert.equal(result, true);
     });
 
     it('Should be able to receive income', async function() {
       let divToken = await network.dividendTokenERC20(erc20Asset);
-      let balanceBefore = bn(await myb.balanceOf(accounts[4]));
-      await divToken.withdraw({from: accounts[4], gas:110000});
-      let balanceAfter = bn(await myb.balanceOf(accounts[4]));
+      let balanceBefore = bn(await myb.methods.balanceOf(accounts[4]).call());
+      await divToken.methods.withdraw().send({from: accounts[4], gas:110000});
+      let balanceAfter = bn(await myb.methodsd.balanceOf(accounts[4]).call());
       let diff = balanceAfter.minus(balanceBefore);
       assert.equal(diff.isGreaterThan(0), true);
     });
@@ -396,20 +419,24 @@ describe('Network.js', function() {
     });
 
     it('Should mint a token', async function() {
-      await divToken.mint(accounts[1], 100, {from: accounts[0]});
+      await divToken.methods.mint(accounts[1], 100).send({from: accounts[0]});
       assert.equal(bn(await divToken.totalSupply()).eq(100), true);
       assert.equal(bn(await divToken.balanceOf(accounts[1])).eq(100), true);
     });
 
     it('Should issue dividends to token holders', async function() {
       let amount = await web3.utils.toWei('1', 'ether');
-      let result = await network.issueDividends(divToken.address, accounts[0], amount);
+      let result = await network.issueDividends({
+        asset: divToken.options.address,
+        account: accounts[0],
+        amount: amount
+      });
       assert.equal(result, true);
     });
 
     it('Should withdraw dividends', async function() {
       let balanceBefore = bn(await web3.eth.getBalance(accounts[1]));
-      await divToken.withdraw({from: accounts[1]});
+      await divToken.methods.withdraw().send({from: accounts[1]});
       let balanceAfter = bn(await web3.eth.getBalance(accounts[1]));
       let diff = balanceAfter.minus(balanceBefore);
       assert.equal(diff.isGreaterThan(0), true);

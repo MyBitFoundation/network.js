@@ -20,16 +20,14 @@
   },
   "homepage": "https://github.com/MyBitFoundation/MyBit-Network.website#readme",
   "dependencies": {
-    "@mybit/contracts": "0.1.12",
+    "@mybit/contracts": "0.1.14",
     "bignumber.js": "^8.0.2",
-    "truffle-contract": "3.0.6",
-    "web3": "1.0.0-beta.36",
-    "web3-core-promievent": "^1.0.0-beta.48"
+    "web3": "1.0.0-beta.36"
   },
   "devDependencies": {
-    "@mybit/network-chain": "^0.1.16",
+    "@mybit/network-chain": "0.1.17",
     "fs-extra": "^7.0.1",
-    "ganache-core": "^2.3.3",
+    "ganache-core": "^2.5.3",
     "mocha": "^5.2.0",
     "nyc": "^13.1.0"
   }
