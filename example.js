@@ -138,6 +138,15 @@ async function contribute(_asset, _amount, _account, _paymentToken){
   }
 }
 
+async function withdrawFromCrowdsale(_asset, _user) {
+  let parameters = {
+    asset: _asset,
+    from: _user
+  }
+  let receipt = await network.payout(parameters);
+  return receipt;
+}
+
 //The generateAsset function allows an owner to generate an asset token that pays
 //out dividends to the accounts that passed in the parameters. This is a way to
 //create an asset without going through the crowdsale process.
@@ -251,6 +260,8 @@ async function fundCoffee(){
   var fundingProgress = await network.getFundingProgress(asset);
   console.log('Funding progress: ', fundingProgress/decimals);
 
+  await withdrawFromCrowdsale(asset, accounts[0]);
+
   //Check open crowdsales (this crowdsale should no longer be listed)
   var crowdsales = await network.getOpenCrowdsales();
   console.log('Open crowdsales: ', crowdsales);
@@ -360,6 +371,7 @@ async function fundMiningRig(){
   console.log('Funding progress: ', Number(await network.getFundingProgress(asset))/decimals);
   await contribute(asset, bn(1000).times(decimals).toString(), accounts[6]);
   console.log('Funding progress: ', Number(await network.getFundingProgress(asset))/decimals);
+  await withdrawFromCrowdsale(asset, accounts[0]);
   console.log('Manager given dividends to cover their percentage');
 
   //Display asset tokens owned by participants
@@ -384,23 +396,23 @@ async function fundMiningRig(){
   });
 
   //Withdraw dividends for each participant
-  await token.methods.withdraw().send({from: accounts[3], gas:120000});
+  //await token.methods.withdraw().send({from: accounts[3], gas:120000});
   await token.methods.withdraw().send({from: accounts[4], gas:120000});
   await token.methods.withdraw().send({from: accounts[5], gas:120000});
   await token.methods.withdraw().send({from: accounts[6], gas:120000});
 
   //Calculate and display the differene in Dai before and after dividends are issued
-  var managerDaiAfter = await dai.methods.balanceOf(accounts[3]).call();
+  //var managerDaiAfter = await dai.methods.balanceOf(accounts[3]).call();
   var investor1DaiAfter = await dai.methods.balanceOf(accounts[4]).call();
   var investor2DaiAfter = await dai.methods.balanceOf(accounts[5]).call();
   var investor3DaiAfter = await dai.methods.balanceOf(accounts[6]).call();
 
-  var managerDiff = Number(managerDaiAfter - managerDaiBefore);
+  //var managerDiff = Number(managerDaiAfter - managerDaiBefore);
   var investor1Diff = Number(investor1DaiAfter - investor1DaiBefore);
   var investor2Diff = Number(investor2DaiAfter - investor2DaiBefore);
   var investor3Diff = Number(investor3DaiAfter - investor3DaiBefore);
 
-  console.log('Manager Dai received: ', managerDiff/decimals);
+  //console.log('Manager Dai received: ', managerDiff/decimals);
   console.log('Investor 1 Dai received: ', investor1Diff/decimals);
   console.log('Investor 2 Dai received: ', investor2Diff/decimals);
   console.log('Investor 3 Dai received: ', investor3Diff/decimals);

@@ -3,31 +3,22 @@ const Artifacts = Contracts.artifacts;
 const bn = require("bignumber.js");
 bn.config({ EXPONENTIAL_AT: 80 });
 const tempGasAmount = '200000';
-
-const Promisify = (inner) =>
-    new Promise((resolve, reject) =>
-        inner((err, res) => {
-            if (err) {
-                reject(err);
-            } else {
-                resolve(res);
-            }
-        })
-    );
-
-function processEventCallbacks(object){
-  //Regular event callbacks
-  if(!object.onError) object.onError = function(){}
-  if(!object.onTransactionHash) object.onTransactionHash = function(){}
-  if(!object.onReceipt) object.onReceipt = function(){}
-  return object;
-}
+const NULL_ADDRESS = '0x0000000000000000000000000000000000000000';
 
 module.exports = function (web3, contractAddresses){
   function contract(artifact, address){
     var c = new web3.eth.Contract(artifact.abi, address);
     return c;
   }
+
+  function processEventCallbacks(object){
+    //Regular event callbacks
+    if(!object.onError) object.onError = function(){}
+    if(!object.onTransactionHash) object.onTransactionHash = function(){}
+    if(!object.onReceipt) object.onReceipt = function(){}
+    return object;
+  }
+
   //Event functions
   async function getTransactionEvent(_message, _from, _to, _fromBlock){
     initEventsContract();
@@ -38,8 +29,6 @@ module.exports = function (web3, contractAddresses){
                                                   to: _to },
                                               fromBlock: _fromBlock,
                                               toBlock: 'latest'});
-    //logs = await Promisify(callback => e.get(callback));
-    //return logs;
     return e;
   };
 
@@ -53,8 +42,6 @@ module.exports = function (web3, contractAddresses){
                                                 assetID: assetID },
                                             fromBlock: _fromBlock,
                                             toBlock: 'latest'});
-    //logs = await Promisify(callback => e.get(callback));
-    //return logs;
     return e;
   };
 
@@ -66,9 +53,6 @@ module.exports = function (web3, contractAddresses){
                                                   origin: _origin},
                                               fromBlock: _fromBlock,
                                               toBlock: 'latest'});
-
-    //logs = await Promisify(callback => e.get(callback));
-    //return logs;
     return e;
   };
 
@@ -331,8 +315,8 @@ module.exports = function (web3, contractAddresses){
       object = processEventCallbacks(object);
       let instance;
       if(object.fundingToken === undefined){
-        let divTokenETHContract = new web3.eth.Contract(Artifacts.DividendTokenETH.abi)
-        instance = await divTokenETHContract.deploy({data: Artifacts.DividendTokenETH.bytecode,arguments: [object.uri, object.owner]})
+        let divTokenETHContract = new web3.eth.Contract(Artifacts.DividendToken.abi)
+        instance = await divTokenETHContract.deploy({data: Artifacts.DividendToken.bytecode,arguments: [object.uri, object.owner]})
                                             .send({from: object.owner, gas:'2700000'})
                                             .on('error', object.onError)
                                             .on('transactionHash', object.onTransactionHash)
@@ -343,7 +327,7 @@ module.exports = function (web3, contractAddresses){
                                             .send({from: object.owner, gas:'2700000'})
                                             .on('error', object.onError)
                                             .on('transactionHash', object.onTransactionHash)
-                                            .on('receipt', object.onReceipt)
+                                            .on('receipt', object.onReceipt);
       }
       return instance;
     },
@@ -356,7 +340,7 @@ module.exports = function (web3, contractAddresses){
                                         .send({from: object.owner, gas:'2700000'})
                                         .on('error', object.onError)
                                         .on('transactionHash', object.onTransactionHash)
-                                        .on('receipt', object.onReceipt)
+                                        .on('receipt', object.onReceipt);
       return instance;
     },
 
@@ -366,13 +350,14 @@ module.exports = function (web3, contractAddresses){
       if(!object.buyAsset) object.buyAsset = {}
       object.approve = processEventCallbacks(object.approve);
       object.buyAsset = processEventCallbacks(object.buyAsset);
+      let receipt;
       if(object.paymentToken === undefined){
         initCrowdsaleETHContract();
         receipt = await crowdsaleETHContract.methods.buyAssetOrderETH(object.asset, object.investor)
-                                  .send({from: object.investor, value: object.amount, gas:'190000'})
+                                  .send({from: object.investor, value: object.amount, gas:'120000'})
                                   .on('error', object.buyAsset.onError)
                                   .on('transactionHash', object.buyAsset.onTransactionHash)
-                                  .on('receipt', object.buyAsset.onReceipt)
+                                  .on('receipt', object.buyAsset.onReceipt);
       } else {
         initCrowdsaleERC20Contract();
         let paymentToken = contract(Artifacts.ERC20, object.paymentToken)
@@ -380,12 +365,37 @@ module.exports = function (web3, contractAddresses){
                           .send({from: object.investor})
                           .on('error', object.approve.onError)
                           .on('transactionHash', object.approve.onTransactionHash)
-                          .on('receipt', object.approve.onReceipt)
+                          .on('receipt', object.approve.onReceipt);
 
         receipt = await crowdsaleERC20Contract.methods.buyAssetOrderERC20(object.asset, object.investor, object.amount, object.paymentToken)
                                               .send({from: object.investor, gas:'2300000'})
                                               .on('error', object.buyAsset.onError)
                                               .on('transactionHash', object.buyAsset.onTransactionHash)
+                                              .on('receipt', object.buyAsset.onReceipt);
+
+      }
+      return receipt;
+    },
+
+    payout: async (object) => {
+      initApiContract();
+      object = processEventCallbacks(object);
+      let receipt;
+      let fundingToken = await apiContract.methods.getAssetFundingToken(object.asset).call()
+      if(fundingToken == NULL_ADDRESS){
+        initCrowdsaleETHContract();
+        receipt = await crowdsaleETHContract.methods.payoutETH(object.asset)
+                                              .send({from: object.from, gas:tempGasAmount})
+                                              .on('error', object.onError)
+                                              .on('transactionHash', object.onTransactionHash)
+                                              .on('receipt', object.onReceipt);
+      } else {
+        initCrowdsaleERC20Contract();
+        receipt = await crowdsaleERC20Contract.methods.payoutERC20(object.asset)
+                                              .send({from: object.from, gas:'1000000'})
+                                              .on('error', object.onError)
+                                              .on('transactionHash', object.onTransactionHash)
+                                              .on('receipt', object.onReceipt);
 
       }
       return receipt;
@@ -395,13 +405,13 @@ module.exports = function (web3, contractAddresses){
     issueDividends: async (object) => {
       object = processEventCallbacks(object);
       let receipt;
-      let block = await web3.eth.getBlock('latest');;
+      let block = await web3.eth.getBlock('latest');
       let assetInterface = contract(Artifacts.DivToken, object.asset);
-      erc20Address = await assetInterface.methods.getERC20.call()
-      if(erc20Address == '0x0000000000000000000000000000000000000000'){
+      erc20Address = await assetInterface.methods.getERC20().call()
+      if(erc20Address == NULL_ADDRESS){
         let assetContract = contract(Artifacts.DividendToken, object.asset);
         receipt = await assetContract.methods.issueDividends()
-                                     .send({from:object.account, value:object.amount, gas: '220000'})
+                                     .send({from:object.account, value:object.amount, gas: '65000'})
                                      .on('error', object.onError)
                                      .on('transactionHash', object.onTransactionHash)
                                      .on('receipt', object.onReceipt)
