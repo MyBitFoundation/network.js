@@ -489,7 +489,7 @@ describe('Network.js', function() {
       assert.equal(asset.startsWith('0x'), true);
     });
     /*
-    This currently hangs because of the finishMinting() function
+    //This currently hangs because of the finishMinting() function
     it('Should create transferrable asset', async function() {
       let object = await network.tokenizeAsset({
         assetURI: 'Transferable',
@@ -498,9 +498,8 @@ describe('Network.js', function() {
         tokenAmounts: [100, 200],
         tradeable: true
       });
-      //asset = object.asset;
-      //assert.equal(asset.startsWith('0x'), true);
-      assert.equal(result.status, true);
+      asset = object.asset;
+      assert.equal(asset.startsWith('0x'), true);
     });
     */
   });

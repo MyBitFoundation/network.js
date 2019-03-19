@@ -7,7 +7,7 @@ const NULL_ADDRESS = '0x0000000000000000000000000000000000000000';
 
 module.exports = function (web3, contractAddresses){
   function contract(artifact, address){
-    var c = new web3.eth.Contract(artifact.abi, address);
+    const c = new web3.eth.Contract(artifact.abi, address);
     return c;
   }
 
@@ -189,7 +189,7 @@ module.exports = function (web3, contractAddresses){
       if(!object.setState) object.setState = {}
       object.approve = processEventCallbacks(object.approve);
       object.setState = processEventCallbacks(object.setState);
-      var amount = '1000000000000000000000000000000'; //Some large amount 10^30
+      const amount = '1000000000000000000000000000000'; //Some large amount 10^30
       await mybitContract.methods.approve(contractAddresses.ERC20Burner, amount)
                          .send({from: object.from, gas:'55000'})
                          .on('error', object.approve.onError)
@@ -403,35 +403,43 @@ module.exports = function (web3, contractAddresses){
 
     //Pay Eth or ERC20 tokens into a asset's dividend token. The money will be distributed amongst all token holders. Returns web3 PromiEvent
     issueDividends: async (object) => {
-      object = processEventCallbacks(object);
-      let receipt;
-      let block = await web3.eth.getBlock('latest');
-      let assetInterface = contract(Artifacts.DivToken, object.asset);
-      erc20Address = await assetInterface.methods.getERC20().call()
+      if(!object.approve) object.approve = {}
+      if(!object.buyAsset) object.issueDividends = {}
+      object.approve = processEventCallbacks(object.approve);
+      object.issueDividends = processEventCallbacks(object.issueDividends);
+      let receipt, assetContract;
+      const assetInterface = contract(Artifacts.DivToken, object.asset);
+      const erc20Address = await assetInterface.methods.getERC20().call()
       if(erc20Address == NULL_ADDRESS){
-        let assetContract = contract(Artifacts.DividendToken, object.asset);
+        assetContract = contract(Artifacts.DividendToken, object.asset);
         receipt = await assetContract.methods.issueDividends()
                                      .send({from:object.account, value:object.amount, gas: '65000'})
-                                     .on('error', object.onError)
-                                     .on('transactionHash', object.onTransactionHash)
-                                     .on('receipt', object.onReceipt)
+                                     .on('error', object.issueDividends.onError)
+                                     .on('transactionHash', object.issueDividends.onTransactionHash)
+                                     .on('receipt', object.issueDividends.onReceipt)
       } else {
-        let assetContract = contract(Artifacts.DividendTokenERC20, object.asset);
+        const fundingToken = contract(Artifacts.ERC20, erc20Address);
+        assetContract = contract(Artifacts.DividendTokenERC20, object.asset);
+        await fundingToken.methods.approve(object.asset, object.amount)
+                          .send({from: object.account})
+                          .on('error', object.approve.onError)
+                          .on('transactionHash', object.approve.onTransactionHash)
+                          .on('receipt', object.approve.onReceipt);
         receipt = await assetContract.methods.issueDividends(object.amount)
                                      .send({from:object.account, gas: '220000'})
-                                     .on('error', object.onError)
-                                     .on('transactionHash', object.onTransactionHash)
-                                     .on('receipt', object.onReceipt)
+                                     .on('error', object.issueDividends.onError)
+                                     .on('transactionHash', object.issueDividends.onTransactionHash)
+                                     .on('receipt', object.issueDividends.onReceipt)
       }
       return receipt;
     },
 
     //View the assets an investor has invested in. (This may not represent their current stake, just crowdsales they have contributed to)
     getAssetsByInvestor: async (address) => {
-      var assets = [];
-      var logs = await getTransactionEvent('Asset purchased', address, undefined, 0);
+      let assets = [];
+      const logs = await getTransactionEvent('Asset purchased', address, undefined, 0);
       logs.forEach(function (log, index) {
-        var asset = log.returnValues.to;
+        const asset = log.returnValues.to;
         assets.push(asset);
       });
 
@@ -441,11 +449,11 @@ module.exports = function (web3, contractAddresses){
     //View assets created by an asset manager
     getAssetsByManager: async (address) => {
       initApiContract();
-      var assets = [];
-      var logs = await getAssetEvent('Asset funding started', undefined, 0);
-      for(var i=0; i<logs.length; i++){
-        var asset = logs[i].returnValues.asset;
-        var manager = await apiContract.methods.getAssetManager(asset).call();
+      let assets = [];
+      const logs = await getAssetEvent('Asset funding started', undefined, 0);
+      for(let i=0; i<logs.length; i++){
+        const asset = logs[i].returnValues.asset;
+        const manager = await apiContract.methods.getAssetManager(asset).call();
         if(address.toLowerCase() == manager.toLowerCase()){
           assets.push(asset);
         }
@@ -457,11 +465,11 @@ module.exports = function (web3, contractAddresses){
     //View assets by operator
     getAssetsByOperator: async (address) => {
       initApiContract();
-      var assets = [];
-      var logs = await getAssetEvent('Asset funding started', undefined, 0);
-      for(var i=0; i<logs.length; i++){
-        var asset = logs[i].returnValues.asset;
-        var operator = await apiContract.methods.getAssetOperator(asset).call();
+      let assets = [];
+      const logs = await getAssetEvent('Asset funding started', undefined, 0);
+      for(let i=0; i<logs.length; i++){
+        const asset = logs[i].returnValues.asset;
+        const operator = await apiContract.methods.getAssetOperator(asset).call();
         if(address.toLowerCase() == operator.toLowerCase()){
           assets.push(asset);
         }
@@ -472,10 +480,10 @@ module.exports = function (web3, contractAddresses){
 
     //View all assets
     getTotalAssets: async () => {
-      var assets = [];
-      var logs = await getAssetEvent('Asset funding started', undefined, 0);
+      let assets = [];
+      const logs = await getAssetEvent('Asset funding started', undefined, 0);
       logs.forEach(function (log, index) {
-        var asset = log.returnValues.asset;
+        const asset = log.returnValues.asset;
         assets.push(asset);
       });
 
@@ -485,14 +493,14 @@ module.exports = function (web3, contractAddresses){
     //View assets by the open crowdsales
     getOpenCrowdsales: async () => {
       initApiContract();
-      var assets = [];
-      var logs = await getAssetEvent('Asset funding started', undefined, 0);
-      for(var i=0; i<logs.length; i++){
-        var asset = logs[i].returnValues.asset;
-        var finalized = await apiContract.methods.crowdsaleFinalized(asset).call();
+      let assets = [];
+      const logs = await getAssetEvent('Asset funding started', undefined, 0);
+      for(let i=0; i<logs.length; i++){
+        const asset = logs[i].returnValues.asset;
+        const finalized = await apiContract.methods.crowdsaleFinalized(asset).call();
         if(!finalized){
-          var deadline = bn(await apiContract.methods.getCrowdsaleDeadline(asset).call());
-          var now = Math.round(new Date().getTime()/1000); //Current time in seconds;
+          const deadline = bn(await apiContract.methods.getCrowdsaleDeadline(asset).call());
+          const now = Math.round(new Date().getTime()/1000); //Current time in seconds;
           if(deadline.isGreaterThan(now)){
             assets.push(asset);
           }
@@ -505,10 +513,10 @@ module.exports = function (web3, contractAddresses){
     //Get the time left on a crowdsale (closed sales return 0).
     getFundingTimeLeft: async (asset) => {
       initApiContract();
-      var finalized = await apiContract.methods.crowdsaleFinalized(asset).call();
-      var deadline = bn(await apiContract.methods.getCrowdsaleDeadline(asset).call());
-      var now = Math.round(new Date().getTime()/1000); //Current time in seconds;
-      var timeleft;
+      const finalized = await apiContract.methods.crowdsaleFinalized(asset).call();
+      const deadline = bn(await apiContract.methods.getCrowdsaleDeadline(asset).call());
+      const now = Math.round(new Date().getTime()/1000); //Current time in seconds;
+      let timeleft;
       if(deadline.isGreaterThan(now) && !finalized){
         timeleft = deadline - now;
       } else {
@@ -520,43 +528,64 @@ module.exports = function (web3, contractAddresses){
     //Get the funding goal of a crowdsale
     getFundingGoal: async (asset) => {
       initApiContract();
-      var goal = Number(await apiContract.methods.getCrowdsaleGoal(asset).call());
+      const goal = Number(await apiContract.methods.getCrowdsaleGoal(asset).call());
       return goal;
     },
 
     //Get funding progress
     getFundingProgress: async (asset) => {
-      var assetInterface = contract(Artifacts.DivToken, asset);
-      var progress = Number(await assetInterface.methods.totalSupply().call());
+      const assetInterface = contract(Artifacts.DivToken, asset);
+      const progress = Number(await assetInterface.methods.totalSupply().call());
       return progress;
     },
 
     //Get the operator of an asset
     getAssetOperator: async (asset) => {
       initApiContract();
-      var operator = await apiContract.methods.getAssetOperator(asset).call();
+      const operator = await apiContract.methods.getAssetOperator(asset).call();
       return operator;
     },
 
     //Get the manager of an asset
     getAssetManager: async (asset) => {
       initApiContract();
-      var manager = await apiContract.methods.getAssetManager(asset).call();
+      const manager = await apiContract.methods.getAssetManager(asset).call();
       return manager;
     },
 
     //Get an asset's investors
     getAssetInvestors: async (asset) => {
-      var investors = [];
-      var logs = await getTransactionEvent('Asset purchased', undefined, undefined, 0);
+      let investors = [];
+      const logs = await getTransactionEvent('Asset purchased', undefined, undefined, 0);
       logs.forEach(function (log, index) {
         if(log.returnValues.to == asset){
-          var investor = log.returnValues.from;
+          const investor = log.returnValues.from;
           investors.push(investor);
         }
       });
 
-      return investors;
+      return [...new Set(investors)];
     },
+
+    getTimestampeOfFundedAsset: async (asset) => {
+      const logs = await getTransactionEvent('Asset payout', undefined, undefined, 0);
+      if(logs.length > 0) {
+        const blockInfo = await web3.eth.getBlock(logs[0].blockNumber);
+        return blockInfo.timestamp;
+      };
+      return null;
+    },
+
+    //Subscribe to the network's events
+    subscribe: (onError, onResponse) => {
+      initEventsContract();
+      const allEvents = eventsContract.events.allEvents({
+        fromBlock: 0,
+        toBlock: 'latest'
+      }, (err, res) => {
+        if(err && onError && typeof onError === 'function') onError(err);
+        if(res && onResponse && typeof onResponse === 'function') onResponse(res);
+      });
+    }
   }
 };

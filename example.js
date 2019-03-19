@@ -373,6 +373,8 @@ async function fundMiningRig(){
   console.log('Funding progress: ', Number(await network.getFundingProgress(asset))/decimals);
   await withdrawFromCrowdsale(asset, accounts[0]);
   console.log('Manager given dividends to cover their percentage');
+  let timestamp = await network.getTimestampeOfFundedAsset(asset);
+  console.log('Timestamp of funded asset: ', timestamp);
 
   //Display asset tokens owned by participants
   console.log('Manager assets: ', Number(await token.methods.balanceOf(accounts[3]).call())/decimals);
@@ -388,7 +390,7 @@ async function fundMiningRig(){
 
   //Issue dividends in Dai
   console.log('Issuing dividends: 1000 DAI...');
-  await dai.methods.approve(token.options.address, bn(1000).times(decimals).toString()).send({from: accounts[2]});
+  //await dai.methods.approve(token.options.address, bn(1000).times(decimals).toString()).send({from: accounts[2]});
   await network.issueDividends({
     asset: asset,
     account: accounts[2],
@@ -418,6 +420,11 @@ async function fundMiningRig(){
   console.log('Investor 3 Dai received: ', investor3Diff/decimals);
 
 }
+
+network.subscribe(function(response){
+  console.log('Network Subscribe Event:');
+  console.log(response);
+});
 
 await fundMiningRig();
 
