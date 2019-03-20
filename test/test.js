@@ -64,11 +64,6 @@ describe('Network.js', function() {
       assert.equal(api.options.address, addresses.API);
     });
 
-    it('Should create an AssetExchange contract object', async function(){
-      let assetExchange = await network.assetExchange();
-      assert.equal(assetExchange.options.address, addresses.AssetExchange);
-    });
-
     it('Should create an AssetGenerator contract object', async function(){
       let assetGenerator = await network.assetGenerator();
       assert.equal(assetGenerator.options.address, addresses.AssetGenerator);
@@ -114,11 +109,6 @@ describe('Network.js', function() {
       assert.equal(events.options.address, addresses.Events);
     });
 
-    it('Should create a ERC20Burner contract object', async function(){
-      let erc20Burner = await network.erc20Burner();
-      assert.equal(erc20Burner.options.address, addresses.ERC20Burner);
-    });
-
     it('Should create a Operators contract object', async function(){
       let operators = await network.operators();
       assert.equal(operators.options.address, addresses.Operators);
@@ -159,28 +149,7 @@ describe('Network.js', function() {
     });
   });
 
-  describe('Onboard User', function() {
-    it('Should approve burn and return true', async function(){
-      let result = await network.approveBurn({from: accounts[4]});
-      assert.equal(result.status, true);
-      let myb = await network.myBitToken();
-      let amount = bn(await myb.methods.allowance(accounts[4], addresses.ERC20Burner).call());
-      assert.equal(bn(amount).eq(1000000000000000000000000000000), true);
-    });
-
-    it('Allowance should equal 10^30', async function(){
-      let myb = await network.myBitToken();
-      let amount = bn(await myb.methods.allowance(accounts[4], addresses.ERC20Burner).call());
-      assert.equal(bn(amount).eq(1000000000000000000000000000000), true);
-    });
-  });
-
   describe('Start ETH & ERC20 Crowdsales', function() {
-    it('Should get burning approved', async function() {
-      let result = await network.approveBurn({from: accounts[2]});
-      assert.equal(result.status, true);
-    });
-
     it('Should receive ETH asset object with asset address', async function(){
       let amount = await web3.utils.toWei('2', 'ether');
       let result = await network.createAsset({
@@ -192,7 +161,7 @@ describe('Network.js', function() {
         amountToRaise: amount,
         assetManagerPercent: 0,
         escrow: 0,
-        burnToken: addresses.MyBitToken
+        paymentToken: addresses.MyBitToken
       });
 
       ethAsset = result.asset;
@@ -211,7 +180,7 @@ describe('Network.js', function() {
         assetManagerPercent: 0,
         escrow: 0,
         fundingToken: addresses.MyBitToken,
-        burnToken: addresses.MyBitToken
+        paymentToken: addresses.MyBitToken
       });
 
       erc20Asset = result.asset;
@@ -221,7 +190,7 @@ describe('Network.js', function() {
 
   describe('Fund assets', function() {
     it('Should fund ethAsset and get a transaction address', async function(){
-      let amount = await web3.utils.toWei('1', 'ether');
+      let amount = await web3.utils.toWei('1.03', 'ether');
       let result = await network.fundAsset({
         asset: ethAsset,
         investor: accounts[4],
@@ -231,11 +200,11 @@ describe('Network.js', function() {
       assert.equal(result.status, true);
       let divToken = await network.dividendTokenETH(ethAsset);
       let balance = bn(await divToken.methods.balanceOf(accounts[4]).call())
-      assert.equal(balance.eq(amount), true);
+      assert.equal(balance.eq(bn(amount).dividedBy(1.03)), true);
     });
 
     it('Should fund ethAsset and get a transaction address', async function(){
-      let amount = await web3.utils.toWei('1', 'ether');
+      let amount = await web3.utils.toWei('1.03', 'ether');
       let result = await network.fundAsset({
         asset: ethAsset,
         investor: accounts[5],
@@ -251,7 +220,7 @@ describe('Network.js', function() {
     });
 
     it('Should fund erc20Asset and return receipt', async function(){
-      let amount = await web3.utils.toWei('10', 'ether');
+      let amount = await web3.utils.toWei('10.3', 'ether');
       await myb.methods.approve(addresses.CrowdsaleERC20, amount).send({from: accounts[4]});
       let result = await network.fundAsset({
         asset: erc20Asset,
@@ -488,7 +457,6 @@ describe('Network.js', function() {
       asset = object.asset;
       assert.equal(asset.startsWith('0x'), true);
     });
-    /*
     //This currently hangs because of the finishMinting() function
     it('Should create transferrable asset', async function() {
       let object = await network.tokenizeAsset({
@@ -501,6 +469,5 @@ describe('Network.js', function() {
       asset = object.asset;
       assert.equal(asset.startsWith('0x'), true);
     });
-    */
   });
 });

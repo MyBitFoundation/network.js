@@ -4,6 +4,7 @@ const bn = require("bignumber.js");
 bn.config({ EXPONENTIAL_AT: 80 });
 const tempGasAmount = '200000';
 const NULL_ADDRESS = '0x0000000000000000000000000000000000000000';
+const ETH_ADDRESS = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee';
 
 module.exports = function (web3, contractAddresses){
   function contract(artifact, address){
@@ -57,32 +58,32 @@ module.exports = function (web3, contractAddresses){
   };
 
   //Setup contracts
-  let apiContract, mybitContract, erc20BurnerContract, databaseContract, eventsContract,
-      contractManagerContract, singleOwnerContract, pausibleContract, accessHierarchyContract,
-      platformContract, operatorsContract, assetManagerEscrowContract, crowdsaleETHContract,
-      crowdsaleGeneratorETHContract, crowdsaleERC20Contract, crowdsaleGeneratorERC20Contract,
-      assetGeneratorContract, assetExchangeContract;
+  let apiContract, mybitContract, databaseContract, eventsContract,
+      contractManagerContract, singleOwnedContract, pausibleContract,
+      platformContract, operatorsContract, assetManagerEscrowContract,
+      crowdsaleETHContract, crowdsaleGeneratorETHContract, crowdsaleERC20Contract,
+      crowdsaleGeneratorERC20Contract, assetGeneratorContract;
 
   //Setup contracts only when it`s using
   const initApiContract = () => { apiContract = apiContract || contract(Artifacts.API, contractAddresses.API) }
   const initMyBitContract = () => { mybitContract = mybitContract || contract(Artifacts.MyBitToken, contractAddresses.MyBitToken) }
-  const initErc20BurnerContract = () => { erc20BurnerContract = erc20BurnerContract || contract(Artifacts.ERC20Burner, contractAddresses.ERC20Burner) }
+  //const initErc20BurnerContract = () => { erc20BurnerContract = erc20BurnerContract || contract(Artifacts.ERC20Burner, contractAddresses.ERC20Burner) }
   const initDatabaseContract = () => { databaseContract = databaseContract || contract(Artifacts.Database, contractAddresses.Database) }
   const initEventsContract = () => { eventsContract = eventsContract || contract(Artifacts.Events, contractAddresses.Events) }
   const initContractManagerContract = () => { contractManagerContract = contractManagerContract || contract(Artifacts.ContractManager, contractAddresses.ContractManager) }
-  const initSingleOwnerContract = () => { singleOwnerContract = singleOwnerContract || contract(Artifacts.SingleOwned, contractAddresses.SingleOwner) }
+  const initSingleOwnedContract = () => { singleOwnedContract = singleOwnedContract || contract(Artifacts.SingleOwned, contractAddresses.SingleOwned) }
   const initPausibleContract = () => { pausibleContract = pausibleContract || contract(Artifacts.Pausible, contractAddresses.Pausible) }
-  const initAccessHierarchyContract = () => { accessHierarchyContract = accessHierarchyContract || contract(Artifacts.AccessHierarchy, contractAddresses.AccessHierarchy) }
+  //const initAccessHierarchyContract = () => { accessHierarchyContract = accessHierarchyContract || contract(Artifacts.AccessHierarchy, contractAddresses.AccessHierarchy) }
   const initPlatformContract = () => { platformContract = platformContract || contract(Artifacts.Platform, contractAddresses.Platform) }
   const initOperatorsContract = () => { operatorsContract = operatorsContract || contract(Artifacts.Operators, contractAddresses.Operators) }
   const initAssetManagerEscrowContract = () => { assetManagerEscrowContract = assetManagerEscrowContract || contract(Artifacts.AssetManagerEscrow, contractAddresses.AssetManagerEscrow) }
-  const initAssetGoveranceContract = () => { assetGoveranceContract = assetGoveranceContract || contract(Artifacts.AssetGoverance, contractAddresses.AssetGovernance) }
+  const initAssetManagerFundsContract = () => { assetManagerFundsContract = assetManagerFundsContract || contract(Artifacts.AssetManagerFunds, contractAddresses.AssetManagerFunds) }
   const initCrowdsaleETHContract= () => { crowdsaleETHContract = crowdsaleETHContract || contract(Artifacts.CrowdsaleETH, contractAddresses.CrowdsaleETH) }
   const initCrowdsaleGeneratorETHContract = () => { crowdsaleGeneratorETHContract = crowdsaleGeneratorETHContract || contract(Artifacts.CrowdsaleGeneratorETH, contractAddresses.CrowdsaleGeneratorETH) }
   const initCrowdsaleERC20Contract = () => { crowdsaleERC20Contract = crowdsaleERC20Contract || contract(Artifacts.CrowdsaleERC20, contractAddresses.CrowdsaleERC20) }
   const initCrowdsaleGeneratorERC20Contract = () => { crowdsaleGeneratorERC20Contract = crowdsaleGeneratorERC20Contract || contract(Artifacts.CrowdsaleGeneratorERC20, contractAddresses.CrowdsaleGeneratorERC20) }
   const initAssetGeneratorContract = () => { assetGeneratorContract = assetGeneratorContract || contract(Artifacts.AssetGenerator, contractAddresses.AssetGenerator) }
-  const initAssetExchangeContract = () => { assetExchangeContract = assetExchangeContract || contract(Artifacts.AssetExchange, contractAddresses.AssetExchange) }
+  //const initAssetExchangeContract = () => { assetExchangeContract = assetExchangeContract || contract(Artifacts.AssetExchange, contractAddresses.AssetExchange) }
   //const initDivTokenETHContract = () => { divTokenETHContract = divTokenETHContract || contract(Artifacts.DividendToken, contractAddresses.DividendToken) }
   //const initDivTokenERCContract = () => { divTokenERCContract = divTokenERCContract || contract(Artifacts.DividendTokenERC20) }
   //const initDivTokenInterface = () => { divTokenInterface = divTokenInterface || contract(Artifacts.DivToken) }
@@ -92,11 +93,6 @@ module.exports = function (web3, contractAddresses){
     api: () => {
       initApiContract()
       return apiContract
-    },
-
-    assetExchange: () => {
-      initAssetExchangeContract()
-      return assetExchangeContract
     },
 
     assetGenerator: () => {
@@ -144,11 +140,6 @@ module.exports = function (web3, contractAddresses){
       return eventsContract
     },
 
-    erc20Burner: () => {
-      initErc20BurnerContract()
-      return erc20BurnerContract
-    },
-
     myBitToken: () => {
       initMyBitContract()
       return mybitContract
@@ -182,6 +173,7 @@ module.exports = function (web3, contractAddresses){
     },
 
     //Approve the burning of MyBit on the MyBit Go Platform
+    /*
     approveBurn: async (object) => {
       initMyBitContract();
       initContractManagerContract();
@@ -203,7 +195,7 @@ module.exports = function (web3, contractAddresses){
                                                  .on('receipt', object.setState.onReceipt)
 
       return receipt;
-    },
+    },*/
 
     //Add an operator. Only the platform owner may call this function.
     addOperator: async (object) => {
@@ -253,38 +245,46 @@ module.exports = function (web3, contractAddresses){
       object.approve = processEventCallbacks(object.approve);
       object.createAsset = processEventCallbacks(object.createAsset);
       if(object.escrow > 0) initMyBitContract();
+      let value = 0;
       let block = await web3.eth.getBlock('latest');
       if(object.fundingToken === undefined){
         initCrowdsaleGeneratorETHContract();
         if(object.escrow > 0) {
-          await mybitContract.methods.approve(contractAddresses.CrowdsaleGeneratorETH, object.escrow)
-                             .send({from: object.assetManager})
-                             .on('error', object.approve.onError)
-                             .on('transactionHash', object.approve.onTransactionHash)
-                             .on('receipt', object.approve.onReceipt)
-
+          if(object.paymentToken.toLowerCase() !== ETH_ADDRESS){
+            await mybitContract.methods.approve(contractAddresses.CrowdsaleGeneratorETH, object.escrow)
+                               .send({from: object.assetManager})
+                               .on('error', object.approve.onError)
+                               .on('transactionHash', object.approve.onTransactionHash)
+                               .on('receipt', object.approve.onReceipt)
+          } else {
+            value = object.escrow;
+          }
         }
-        await crowdsaleGeneratorETHContract.methods.createAssetOrderETH(object.assetURI, object.assetManager, object.operatorID, object.fundingLength, object.startTime, object.amountToRaise, object.assetManagerPercent, object.escrow, object.burnToken)
-                                           .send({from: object.assetManager, gas:2300000})
+        await crowdsaleGeneratorETHContract.methods.createAssetOrderETH(object.assetURI, object.assetManager, object.operatorID, object.fundingLength, object.startTime, object.amountToRaise, object.assetManagerPercent, object.escrow, object.paymentToken)
+                                           .send({from: object.assetManager, value: value, gas:2300000})
                                            .on('error', object.createAsset.onError)
                                            .on('transactionHash', object.createAsset.onTransactionHash)
                                            .on('receipt', object.createAsset.onReceipt)
       } else {
         initCrowdsaleGeneratorERC20Contract();
         if(object.escrow > 0) {
-          await mybitContract.methods.approve(contractAddresses.CrowdsaleGeneratorERC20, object.escrow)
-                             .send({from: object.assetManager})
-                             .on('error', object.approve.onError)
-                             .on('transactionHash', object.approve.onTransactionHash)
-                             .on('receipt', object.approve.onReceipt)
+          if(object.paymentToken.toLowerCase() !== ETH_ADDRESS){
+            await mybitContract.methods.approve(contractAddresses.CrowdsaleGeneratorERC20, object.escrow)
+                               .send({from: object.assetManager})
+                               .on('error', object.approve.onError)
+                               .on('transactionHash', object.approve.onTransactionHash)
+                               .on('receipt', object.approve.onReceipt);
+          } else {
+            value = object.escrow;
+          }
         }
-        await crowdsaleGeneratorERC20Contract.methods.createAssetOrderERC20(object.assetURI, object.assetManager, object.operatorID, object.fundingLength, object.startTime, object.amountToRaise, object.assetManagerPercent, object.escrow, object.fundingToken, object.burnToken)
-                                             .send({from: object.assetManager, gas:6700000})
+        await crowdsaleGeneratorERC20Contract.methods.createAssetOrderERC20(object.assetURI, object.assetManager, object.operatorID, object.fundingLength, object.startTime, object.amountToRaise, object.assetManagerPercent, object.escrow, object.fundingToken, object.paymentToken)
+                                             .send({from: object.assetManager, value: value, gas:6700000})
                                              .on('error', object.createAsset.onError)
                                              .on('transactionHash', object.createAsset.onTransactionHash)
                                              .on('receipt', object.createAsset.onReceipt)
       }
-      let logs = await getAssetEvent('Asset funding started', object.assetURI, block.number);
+      const logs = await getAssetEvent('Asset funding started', object.assetURI, block.number);
       return logs[logs.length-1].returnValues;
     },
 
@@ -346,29 +346,35 @@ module.exports = function (web3, contractAddresses){
 
     //Fund an asset undergoing a crowdsale. Pay Eth or ERC20's and get an asset dividen token in return.
     fundAsset: async (object) => {
-      if(!object.approve) object.approve = {}
       if(!object.buyAsset) object.buyAsset = {}
-      object.approve = processEventCallbacks(object.approve);
       object.buyAsset = processEventCallbacks(object.buyAsset);
       let receipt;
       if(object.paymentToken === undefined){
         initCrowdsaleETHContract();
         receipt = await crowdsaleETHContract.methods.buyAssetOrderETH(object.asset, object.investor)
-                                  .send({from: object.investor, value: object.amount, gas:'120000'})
+                                  .send({from: object.investor, value: object.amount, gas:'130000'})
                                   .on('error', object.buyAsset.onError)
                                   .on('transactionHash', object.buyAsset.onTransactionHash)
                                   .on('receipt', object.buyAsset.onReceipt);
       } else {
         initCrowdsaleERC20Contract();
-        let paymentToken = contract(Artifacts.ERC20, object.paymentToken)
-        await paymentToken.methods.approve(contractAddresses.CrowdsaleERC20, object.amount)
-                          .send({from: object.investor})
-                          .on('error', object.approve.onError)
-                          .on('transactionHash', object.approve.onTransactionHash)
-                          .on('receipt', object.approve.onReceipt);
+        let value = 0;
+        if(object.paymentToken.toLowerCase() !== ETH_ADDRESS){
+          if(!object.approve) object.approve = {};
+          object.approve = processEventCallbacks(object.approve);
+          let paymentToken = contract(Artifacts.ERC20, object.paymentToken)
+          await paymentToken.methods.approve(contractAddresses.CrowdsaleERC20, object.amount)
+                            .send({from: object.investor})
+                            .on('error', object.approve.onError)
+                            .on('transactionHash', object.approve.onTransactionHash)
+                            .on('receipt', object.approve.onReceipt);
+        } else {
+          value = object.amount;
+        }
+
 
         receipt = await crowdsaleERC20Contract.methods.buyAssetOrderERC20(object.asset, object.investor, object.amount, object.paymentToken)
-                                              .send({from: object.investor, gas:'2300000'})
+                                              .send({from: object.investor, value: value, gas:'2300000'})
                                               .on('error', object.buyAsset.onError)
                                               .on('transactionHash', object.buyAsset.onTransactionHash)
                                               .on('receipt', object.buyAsset.onReceipt);

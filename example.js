@@ -64,15 +64,13 @@ async function setOperator(_uri, _assetType, _address){
 //In order to avoid revert errors, this function first checks whether a crowdsale
 //has be created using the same parameters. If there is already a crowdsale created,
 //the function returns the asset ID and token address.
-async function startCrowdsale(_uri, _goal, _timeInSeconds, _operatorID, _managerAddress, _percent, _escrow, _fundingToken, _burnToken){
+async function startCrowdsale(_uri, _goal, _timeInSeconds, _operatorID, _managerAddress, _percent, _escrow, _fundingToken, _paymentToken){
   logs = await events.getPastEvents('LogAsset', {
                             filter: { messageID: web3.utils.sha3('Asset funding started'), assetID: web3.utils.sha3(_uri)},
                             fromBlock: 0,
                             toBlock: 'latest'});
 
   if(logs.length === 0){
-    await network.approveBurn({from: _managerAddress});
-
     var parameters = {
       assetURI: _uri,
       operatorID: _operatorID,
@@ -86,10 +84,10 @@ async function startCrowdsale(_uri, _goal, _timeInSeconds, _operatorID, _manager
     if(_fundingToken != '' && _fundingToken != '0x0000000000000000000000000000000000000000'){
       parameters.fundingToken = _fundingToken;
     }
-    if(_burnToken != '' && _burnToken != '0x0000000000000000000000000000000000000000'){
-      parameters.burnToken = _burnToken;
+    if(_paymentToken != '' && _paymentToken != '0x0000000000000000000000000000000000000000'){
+      parameters.paymentToken = _paymentToken;
     } else {
-      parameters.burnToken = addresses.MyBitToken;
+      parameters.paymentToken = addresses.MyBitToken;
     }
     return await network.createAsset(parameters);
 
@@ -128,8 +126,6 @@ async function contribute(_asset, _amount, _account, _paymentToken){
       //token.methods.approve(addresses.CrowdsaleERC20, _amount).send({from: _account});
     }
 
-    let receipt = await network.approveBurn({from: _account});
-    console.log(receipt.transactionHash)
     receipt = await network.fundAsset(parameters);
     console.log(receipt.transactionHash)
     console.log('Contributed ', _amount/decimals);
@@ -253,8 +249,8 @@ async function fundCoffee(){
   var fundingProgress = await network.getFundingProgress(asset);
   console.log('Funding progress: ', fundingProgress/decimals);
 
-  //accounts[3] contributes 0.04 eth. (this should complete the crowdsale)
-  await contribute(asset, '40000000000000000', accounts[3]);
+  //accounts[3] contributes 0.045 eth. (this should complete the crowdsale)
+  await contribute(asset, '45000000000000000', accounts[3]);
 
   //Check funding progress
   var fundingProgress = await network.getFundingProgress(asset);
@@ -369,7 +365,7 @@ async function fundMiningRig(){
   console.log('Funding progress: ', Number(await network.getFundingProgress(asset))/decimals);
   await contribute(asset, bn(1000).times(decimals).toString(), accounts[5]);
   console.log('Funding progress: ', Number(await network.getFundingProgress(asset))/decimals);
-  await contribute(asset, bn(1000).times(decimals).toString(), accounts[6]);
+  await contribute(asset, bn(1500).times(decimals).toString(), accounts[6]);
   console.log('Funding progress: ', Number(await network.getFundingProgress(asset))/decimals);
   await withdrawFromCrowdsale(asset, accounts[0]);
   console.log('Manager given dividends to cover their percentage');
