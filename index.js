@@ -251,11 +251,12 @@ module.exports = function (web3, contractAddresses){
         initCrowdsaleGeneratorETHContract();
         if(object.escrow > 0) {
           if(object.paymentToken.toLowerCase() !== ETH_ADDRESS){
-            await mybitContract.methods.approve(contractAddresses.CrowdsaleGeneratorETH, object.escrow)
-                               .send({from: object.assetManager})
-                               .on('error', object.approve.onError)
-                               .on('transactionHash', object.approve.onTransactionHash)
-                               .on('receipt', object.approve.onReceipt)
+            let paymentTokenContract = contract(Artifacts.ERC20, object.paymentToken)
+            await paymentTokenContract.methods.approve(contractAddresses.CrowdsaleGeneratorETH, object.escrow)
+                                      .send({from: object.assetManager})
+                                      .on('error', object.approve.onError)
+                                      .on('transactionHash', object.approve.onTransactionHash)
+                                      .on('receipt', object.approve.onReceipt)
           } else {
             value = object.escrow;
           }
@@ -362,12 +363,12 @@ module.exports = function (web3, contractAddresses){
         if(object.paymentToken.toLowerCase() !== ETH_ADDRESS){
           if(!object.approve) object.approve = {};
           object.approve = processEventCallbacks(object.approve);
-          let paymentToken = contract(Artifacts.ERC20, object.paymentToken)
-          await paymentToken.methods.approve(contractAddresses.CrowdsaleERC20, object.amount)
-                            .send({from: object.investor})
-                            .on('error', object.approve.onError)
-                            .on('transactionHash', object.approve.onTransactionHash)
-                            .on('receipt', object.approve.onReceipt);
+          let paymentTokenContract = contract(Artifacts.ERC20, object.paymentToken)
+          await paymentTokenContract.methods.approve(contractAddresses.CrowdsaleERC20, object.amount)
+                                    .send({from: object.investor})
+                                    .on('error', object.approve.onError)
+                                    .on('transactionHash', object.approve.onTransactionHash)
+                                    .on('receipt', object.approve.onReceipt);
         } else {
           value = object.amount;
         }
