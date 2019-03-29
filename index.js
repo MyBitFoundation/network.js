@@ -61,8 +61,8 @@ module.exports = function (web3, contractAddresses){
   let apiContract, mybitContract, databaseContract, eventsContract,
       contractManagerContract, singleOwnedContract, pausibleContract,
       platformContract, operatorsContract, assetManagerEscrowContract,
-      crowdsaleETHContract, crowdsaleGeneratorETHContract, crowdsaleERC20Contract,
-      crowdsaleGeneratorERC20Contract, assetGeneratorContract;
+      assetManagerFundsContract, crowdsaleETHContract, crowdsaleGeneratorETHContract,
+      crowdsaleERC20Contract, crowdsaleGeneratorERC20Contract, assetGeneratorContract;
 
   //Setup contracts only when it`s using
   const initApiContract = () => { apiContract = apiContract || contract(Artifacts.API, contractAddresses.API) }
