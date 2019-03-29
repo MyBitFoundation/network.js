@@ -105,6 +105,11 @@ module.exports = function (web3, contractAddresses){
       return assetManagerEscrowContract
     },
 
+    assetManagerFunds: () => {
+      initAssetManagerFundsContract()
+      return assetManagerFundsContract
+    },
+
     contractManager: () => {
       initContractManagerContract()
       return contractManagerContract
@@ -535,14 +540,14 @@ module.exports = function (web3, contractAddresses){
     //Get the funding goal of a crowdsale
     getFundingGoal: async (asset) => {
       initApiContract();
-      const goal = Number(await apiContract.methods.getCrowdsaleGoal(asset).call());
+      const goal = bn(await apiContract.methods.getCrowdsaleGoal(asset).call()).toString();
       return goal;
     },
 
     //Get funding progress
     getFundingProgress: async (asset) => {
       const assetInterface = contract(Artifacts.DivToken, asset);
-      const progress = Number(await assetInterface.methods.totalSupply().call());
+      const progress = bn(await assetInterface.methods.totalSupply().call()).toString();
       return progress;
     },
 
@@ -575,12 +580,31 @@ module.exports = function (web3, contractAddresses){
     },
 
     getTimestampeOfFundedAsset: async (asset) => {
-      const logs = await getTransactionEvent('Asset payout', undefined, undefined, 0);
+      const logs = await getTransactionEvent('Asset payout', asset, undefined, 0);
       if(logs.length > 0) {
         const blockInfo = await web3.eth.getBlock(logs[0].blockNumber);
         return blockInfo.timestamp;
       };
       return null;
+    },
+
+    getAssetIncome: async (asset) => {
+      const assetInterface = contract(Artifacts.DivToken, asset);
+      logs = await assetInterface.getPastEvents('LogIncomeReceived', {
+                              filter: {},
+                              fromBlock: 0,
+                              toBlock: 'latest'});
+
+      return await Promise.all(logs.map(async log => {
+        const { blockNumber, returnValues, } = log;
+        const { _paymentAmount, } = returnValues;
+        const block = await web3.eth.getBlock(blockNumber);
+        const timestamp = block.timestamp;
+        return{
+          payment: _paymentAmount,
+          timestamp,
+        }
+      }));
     },
 
     //Subscribe to the network's events

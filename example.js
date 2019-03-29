@@ -393,6 +393,10 @@ async function fundMiningRig(){
     amount: bn(1000).times(decimals).toString()
   });
 
+  console.log('Checking asset has received income...');
+  let payments = await network.getAssetIncome(asset);
+  console.log(payments);
+
   //Withdraw dividends for each participant
   //await token.methods.withdraw().send({from: accounts[3], gas:120000});
   await token.methods.withdraw().send({from: accounts[4], gas:120000});
