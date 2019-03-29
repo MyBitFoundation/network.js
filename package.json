@@ -1,6 +1,6 @@
 {
   "name": "@mybit/network.js",
-  "version": "0.0.18",
+  "version": "0.0.19",
   "description": "API for interacting the MyBit Network SDK",
   "main": "index.js",
   "scripts": {
