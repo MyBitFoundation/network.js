@@ -275,7 +275,8 @@ module.exports = function (web3, contractAddresses){
         initCrowdsaleGeneratorERC20Contract();
         if(object.escrow > 0) {
           if(object.paymentToken.toLowerCase() !== ETH_ADDRESS){
-            await mybitContract.methods.approve(contractAddresses.CrowdsaleGeneratorERC20, object.escrow)
+            let paymentTokenContract = contract(Artifacts.ERC20, object.paymentToken)
+            await paymentTokenContract.methods.approve(contractAddresses.CrowdsaleGeneratorERC20, object.escrow)
                                .send({from: object.assetManager})
                                .on('error', object.approve.onError)
                                .on('transactionHash', object.approve.onTransactionHash)
