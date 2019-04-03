@@ -580,7 +580,7 @@ module.exports = function (web3, contractAddresses){
       return [...new Set(investors)];
     },
 
-    getTimestampeOfFundedAsset: async (asset) => {
+    getTimestampOfFundedAsset: async (asset) => {
       const logs = await getTransactionEvent('Asset payout', asset, undefined, 0);
       if(logs.length > 0) {
         const blockInfo = await web3.eth.getBlock(logs[0].blockNumber);
