@@ -285,8 +285,8 @@ async function fundCoffee(){
   });
 
   //Investors withdraw there dividends
-  await token.methods.withdraw().send({from: accounts[2]});
-  await token.methods.withdraw().send({from: accounts[3]});
+  await token.methods.withdraw().send({from: accounts[2], gas: 130000});
+  await token.methods.withdraw().send({from: accounts[3], gas: 130000});
 
   //Check ether after dividends are issued and calculate the difference from before
   var investor1EtherAfter = await web3.eth.getBalance(accounts[2]);
@@ -369,7 +369,7 @@ async function fundMiningRig(){
   console.log('Funding progress: ', Number(await network.getFundingProgress(asset))/decimals);
   await withdrawFromCrowdsale(asset, accounts[0]);
   console.log('Manager given dividends to cover their percentage');
-  let timestamp = await network.getTimestampeOfFundedAsset(asset);
+  let timestamp = await network.getTimestampOfFundedAsset(asset);
   console.log('Timestamp of funded asset: ', timestamp);
 
   //Display asset tokens owned by participants
@@ -398,10 +398,10 @@ async function fundMiningRig(){
   console.log(payments);
 
   //Withdraw dividends for each participant
-  //await token.methods.withdraw().send({from: accounts[3], gas:120000});
-  await token.methods.withdraw().send({from: accounts[4], gas:120000});
-  await token.methods.withdraw().send({from: accounts[5], gas:120000});
-  await token.methods.withdraw().send({from: accounts[6], gas:120000});
+  //await token.methods.withdraw().send({from: accounts[3], gas:130000});
+  await token.methods.withdraw().send({from: accounts[4], gas:130000});
+  await token.methods.withdraw().send({from: accounts[5], gas:130000});
+  await token.methods.withdraw().send({from: accounts[6], gas:130000});
 
   //Calculate and display the differene in Dai before and after dividends are issued
   //var managerDaiAfter = await dai.methods.balanceOf(accounts[3]).call();

@@ -254,7 +254,10 @@ describe('Network.js', function() {
       console.log('Asset income: ', assetIncome.toString())
       let balanceBefore = bn(await web3.eth.getBalance(accounts[4]));
       console.log('Balance Before: ', balanceBefore.toString())
-      await divToken.methods.withdraw().send({from: accounts[4]});
+      let erc20 = await divToken.methods.getERC20().call({from: accounts[4]});
+      console.log('ERC20: ', erc20);
+      let result = await divToken.methods.withdraw().send({gas: 130000, from: accounts[4]});
+      console.log('withdraw gasUser: ', result.gasUsed);
       let balanceAfter = bn(await web3.eth.getBalance(accounts[4]));
       console.log('Balance After: ', balanceAfter.toString())
       let diff = balanceAfter.minus(balanceBefore);
@@ -279,6 +282,7 @@ describe('Network.js', function() {
 
     it('Should return asset investor assets', async function() {
       let results = await network.getAssetsByInvestor(accounts[4]);
+      console.log(results);
       assert.equal(results.length == 2, true);
       assert.equal(results[0].toLowerCase() == ethAsset.toLowerCase(), true);
       assert.equal(results[1].toLowerCase() == erc20Asset.toLowerCase(), true);
@@ -379,7 +383,7 @@ describe('Network.js', function() {
     it('Should be able to receive income', async function() {
       let divToken = await network.dividendTokenERC20(erc20Asset);
       let balanceBefore = bn(await myb.methods.balanceOf(accounts[4]).call());
-      await divToken.methods.withdraw().send({from: accounts[4], gas:110000});
+      await divToken.methods.withdraw().send({from: accounts[4], gas:130000});
       let balanceAfter = bn(await myb.methods.balanceOf(accounts[4]).call());
       let diff = balanceAfter.minus(balanceBefore);
       assert.equal(diff.isGreaterThan(0), true);
@@ -416,7 +420,7 @@ describe('Network.js', function() {
 
     it('Should withdraw dividends', async function() {
       let balanceBefore = bn(await web3.eth.getBalance(accounts[1]));
-      await divToken.methods.withdraw().send({from: accounts[1]});
+      await divToken.methods.withdraw().send({gas: 130000, from: accounts[1]});
       let balanceAfter = bn(await web3.eth.getBalance(accounts[1]));
       let diff = balanceAfter.minus(balanceBefore);
       assert.equal(diff.isGreaterThan(0), true);
