@@ -2,7 +2,6 @@ const Contracts = require("@mybit/contracts");
 const Artifacts = Contracts.artifacts;
 const bn = require("bignumber.js");
 bn.config({ EXPONENTIAL_AT: 80 });
-const tempGasAmount = '200000';
 const NULL_ADDRESS = '0x0000000000000000000000000000000000000000';
 const ETH_ADDRESS = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee';
 
@@ -169,7 +168,7 @@ module.exports = function (web3, contractAddresses){
     },
 
     dividendTokenERC20: (tokenAddress) => {
-      return contract(Artifacts.DividendTokenERC20, tokenAddress)
+      return contract(Artifacts.DividendToken, tokenAddress)
     },
 
     erc20: (tokenAddress) => {
@@ -198,7 +197,7 @@ module.exports = function (web3, contractAddresses){
                          .on('receipt', object.approve.onReceipt)
 
       let receipt = await contractManagerContract.methods.setContractStatePreferences(true, false)
-                                                 .send({from: object.from, gas:tempGasAmount})
+                                                 .send({from: object.from})
                                                  .on('error', object.setState.onError)
                                                  .on('transactionHash', object.setState.onTransactionHash)
                                                  .on('receipt', object.setState.onReceipt)
@@ -213,7 +212,7 @@ module.exports = function (web3, contractAddresses){
       object = processEventCallbacks(object);
       let block = await web3.eth.getBlock('latest');
       await operatorsContract.methods.registerOperator(object.operator, object.name, object.assetType)
-                             .send({from: object.owner, gas:tempGasAmount})
+                             .send({from: object.owner, gas:'100000'})
                              .on('error', object.onError)
                              .on('transactionHash', object.onTransactionHash)
                              .on('receipt', object.onReceipt)
@@ -227,7 +226,7 @@ module.exports = function (web3, contractAddresses){
       initOperatorsContract();
       object = processEventCallbacks(object);
       let receipt = await operatorsContract.methods.acceptEther(object.id, true)
-                                           .send({from: object.operator, gas:tempGasAmount})
+                                           .send({from: object.operator, gas:'55000'})
                                            .on('error', object.onError)
                                            .on('transactionHash', object.onTransactionHash)
                                            .on('receipt', object.onReceipt)
@@ -239,7 +238,7 @@ module.exports = function (web3, contractAddresses){
       initOperatorsContract();
       object = processEventCallbacks(object);
       let receipt = await operatorsContract.methods.acceptERC20Token(object.id, object.token, true)
-                                           .send({from: object.operator, gas:tempGasAmount})
+                                           .send({from: object.operator, gas:'55000'})
                                            .on('error', object.onError)
                                            .on('transactionHash', object.onTransactionHash)
                                            .on('receipt', object.onReceipt)
@@ -270,8 +269,8 @@ module.exports = function (web3, contractAddresses){
             value = object.escrow;
           }
         }
-        await crowdsaleGeneratorETHContract.methods.createAssetOrderETH(object.assetURI, object.assetManager, object.operatorID, object.fundingLength, object.startTime, object.amountToRaise, object.assetManagerPercent, object.escrow, object.paymentToken)
-                                           .send({from: object.assetManager, value: value, gas:6700000})
+        crowdsaleGeneratorETHContract.methods.createAssetOrderETH(object.assetURI, object.assetManager, object.operatorID, object.fundingLength, object.startTime, object.amountToRaise, object.assetManagerPercent, object.escrow, object.paymentToken)
+                                           .send({from: object.assetManager, value: value, gas:'1900000'})
                                            .on('error', object.createAsset.onError)
                                            .on('transactionHash', object.createAsset.onTransactionHash)
                                            .on('receipt', object.createAsset.onReceipt)
@@ -290,7 +289,7 @@ module.exports = function (web3, contractAddresses){
           }
         }
         await crowdsaleGeneratorERC20Contract.methods.createAssetOrderERC20(object.assetURI, object.assetManager, object.operatorID, object.fundingLength, object.startTime, object.amountToRaise, object.assetManagerPercent, object.escrow, object.fundingToken, object.paymentToken)
-                                             .send({from: object.assetManager, value: value, gas:6700000})
+                                             .send({from: object.assetManager, value: value, gas:'1900000'})
                                              .on('error', object.createAsset.onError)
                                              .on('transactionHash', object.createAsset.onTransactionHash)
                                              .on('receipt', object.createAsset.onReceipt)
@@ -306,13 +305,13 @@ module.exports = function (web3, contractAddresses){
       let block = await web3.eth.getBlock('latest');
       if(object.tradeable == true){
         await assetGeneratorContract.methods.createTradeableAsset(object.assetURI, object.assetManager, object.tokenHolders, object.tokenAmounts)
-                              .send({from: object.assetManager, gas:'2000000'})
+                              .send({from: object.assetManager, gas:'1450000'})
                               .on('error', object.onError)
                               .on('transactionHash', object.onTransactionHash)
                               .on('receipt', object.onReceipt)
       } else {
         await assetGeneratorContract.methods.createAsset(object.assetURI, object.assetManager, object.tokenHolders, object.tokenAmounts)
-                              .send({from: object.assetManager, gas:'2000000'})
+                              .send({from: object.assetManager, gas:'525000'})
                               .on('error', object.onError)
                               .on('transactionHash', object.onTransactionHash)
                               .on('receipt', object.onReceipt)
@@ -339,6 +338,7 @@ module.exports = function (web3, contractAddresses){
                                             .on('transactionHash', object.onTransactionHash)
                                             .on('receipt', object.onReceipt);
       }
+      //console.log('createDividendToken gasUsed: ', instance);
       return instance;
     },
 
@@ -351,6 +351,7 @@ module.exports = function (web3, contractAddresses){
                                         .on('error', object.onError)
                                         .on('transactionHash', object.onTransactionHash)
                                         .on('receipt', object.onReceipt);
+      //console.log('createERC20Token gasUsed: ', instance);
       return instance;
     },
 
@@ -362,7 +363,7 @@ module.exports = function (web3, contractAddresses){
       if(object.paymentToken === undefined){
         initCrowdsaleETHContract();
         receipt = await crowdsaleETHContract.methods.buyAssetOrderETH(object.asset, object.investor)
-                                  .send({from: object.investor, value: object.amount, gas:'2300000'})
+                                  .send({from: object.investor, value: object.amount, gas:'350000'})
                                   .on('error', object.buyAsset.onError)
                                   .on('transactionHash', object.buyAsset.onTransactionHash)
                                   .on('receipt', object.buyAsset.onReceipt);
@@ -383,7 +384,7 @@ module.exports = function (web3, contractAddresses){
         }
 
         receipt = await crowdsaleERC20Contract.methods.buyAssetOrderERC20(object.asset, object.investor, object.amount, object.paymentToken)
-                                              .send({from: object.investor, value: value, gas:'2300000'})
+                                              .send({from: object.investor, value: value, gas:'350000'})
                                               .on('error', object.buyAsset.onError)
                                               .on('transactionHash', object.buyAsset.onTransactionHash)
                                               .on('receipt', object.buyAsset.onReceipt);
@@ -426,7 +427,7 @@ module.exports = function (web3, contractAddresses){
       const erc20Address = await assetContract.methods.getERC20().call()
       if(erc20Address == NULL_ADDRESS){
         receipt = await assetContract.methods.issueDividends(object.amount)
-                                     .send({from:object.account, value:object.amount, gas:'80000'})
+                                     .send({from:object.account, value:object.amount, gas:'70000'})
                                      .on('error', object.issueDividends.onError)
                                      .on('transactionHash', object.issueDividends.onTransactionHash)
                                      .on('receipt', object.issueDividends.onReceipt)
@@ -438,7 +439,7 @@ module.exports = function (web3, contractAddresses){
                           .on('transactionHash', object.approve.onTransactionHash)
                           .on('receipt', object.approve.onReceipt);
         receipt = await assetContract.methods.issueDividends(object.amount)
-                                     .send({from:object.account, gas:'200000'})
+                                     .send({from:object.account, gas:'110000'})
                                      .on('error', object.issueDividends.onError)
                                      .on('transactionHash', object.issueDividends.onTransactionHash)
                                      .on('receipt', object.issueDividends.onReceipt)
