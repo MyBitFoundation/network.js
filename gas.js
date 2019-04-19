@@ -4,7 +4,7 @@ module.exports = {
   acceptERC20Token: '55000',
   approve: '55000',
   createAssetOrderETH: '1900000',
-  createAssetOrderERC20: '1900000',
+  createAssetOrderERC20: '2100000',
   createTradeableAsset: '1450000',
   createAsset: '525000',
   createDividendToken: '1750000',
