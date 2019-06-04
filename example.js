@@ -89,9 +89,7 @@ async function startCrowdsale(_uri, _goal, _timeInSeconds, _operatorID, _manager
     } else {
       parameters.paymentToken = addresses.MyBitToken;
     }
-    console.log('a')
     return await network.createAsset(parameters);
-    console.log('b')
   } else {
     for(var i=0;i<logs.length;i++){
       if(logs[i].returnValues.uri == _uri){
@@ -352,10 +350,8 @@ async function fundMiningRig(){
     token: dai.options.address,
     operator: accounts[2]
   });
-  console.log('1')
   //Start the crowdsale, for 3000 usd (3000 dai), funding length 1 month (2592000 seconds), assetManager is accounts[3] with a 2% fee
   response = await startCrowdsale(assetURI, fundingGoal, fundingLength, operatorID, manager, managerPercent, 0, dai.options.address, '');
-  console.log('2')
   //Get the asset ID returned by the startCrowdsale function
   var asset = response.asset;
   console.log('Asset: ', asset);

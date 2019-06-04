@@ -537,6 +537,27 @@ module.exports = function (web3, contractAddresses){
       return assets;
     },
 
+    //View all assets with blockNumber and manager address
+    getTotalAssetsWithBlockNumberAndManager: async () => {
+      let assets = [];
+      const logs = await getAssetEvent('Asset funding started', undefined, 0);
+      logs.forEach(function (log, index) {
+        const {
+          asset,
+          manager,
+        } = log.returnValues;
+
+        const assetInfo = {
+          address: asset,
+          blockNumber: log.blockNumber,
+          manager,
+        };
+        assets.push(assetInfo);
+      });
+
+      return assets;
+    },
+
     //View all assets
     getTotalAssets: async () => {
       let assets = [];
@@ -628,6 +649,15 @@ module.exports = function (web3, contractAddresses){
 
     getTimestampOfFundedAsset: async (asset) => {
       const logs = await getTransactionEvent('Asset payout', asset, undefined, 0);
+      if(logs.length > 0) {
+        const blockInfo = await web3.eth.getBlock(logs[0].blockNumber);
+        return blockInfo.timestamp;
+      };
+      return null;
+    },
+
+    getTimestamoOfAssetCreation: async asset => {
+      const logs = await getTransactionEvent('Asset funding started', asset, undefined, 0);
       if(logs.length > 0) {
         const blockInfo = await web3.eth.getBlock(logs[0].blockNumber);
         return blockInfo.timestamp;

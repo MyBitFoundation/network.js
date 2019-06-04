@@ -317,6 +317,13 @@ describe('Network.js', function() {
       assert.equal(results[0].toLowerCase() == ethAsset.toLowerCase(), true);
       assert.equal(results[1].toLowerCase() == erc20Asset.toLowerCase(), true);
     });
+
+    it('Should return all assets with blockNumber and asset manager address', async function() {
+      let results = await network.getTotalAssetsWithBlockNumberAndManager();
+      assert.equal(results.length == 2, true);
+      assert.equal(results[0].address.toLowerCase() == ethAsset.toLowerCase(), true);
+      assert.equal(results[1].address.toLowerCase() == erc20Asset.toLowerCase(), true);
+    });
   });
 
   describe('Get manager, operator, investors by asset', function() {
