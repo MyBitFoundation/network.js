@@ -147,6 +147,23 @@ describe('Network.js', function() {
       });
       assert.equal(result.status, true);
     });
+
+    it('Should payout ether and return true', async function(){
+      let result = await network.payoutEther({
+        id: operatorID,
+        operator: accounts[3]
+      });
+      assert.equal(result.status, true);
+    });
+
+    it('Should payout erc20 and return true', async function(){
+      let result = await network.payoutERC20Token({
+        id: operatorID,
+        token: addresses.MyBitToken,
+        operator: accounts[3]
+      });
+      assert.equal(result.status, true);
+    });
   });
 
   describe('Start ETH & ERC20 Crowdsales', function() {
@@ -393,7 +410,7 @@ describe('Network.js', function() {
   describe('Create various tokens', function() {
     let divToken;
 
-    it('Should create an ETH dividend token token', async function() {
+    it('Should create an ETH dividend token', async function() {
       divToken = await network.createDividendToken({
         uri: 'Ether DivToken',
         owner: accounts[0]
@@ -403,7 +420,7 @@ describe('Network.js', function() {
     });
 
     it('Should mint a token', async function() {
-      await divToken.methods.mint(accounts[1], 100).send({from: accounts[0]});
+      await divToken.methods.generateTokens(accounts[1], 100).send({from: accounts[0], gas:'125000'});
       assert.equal(bn(await divToken.methods.totalSupply().call()).eq(100), true);
       assert.equal(bn(await divToken.methods.balanceOf(accounts[1]).call()).eq(100), true);
     });
@@ -426,7 +443,7 @@ describe('Network.js', function() {
       assert.equal(diff.isGreaterThan(0), true);
     });
 
-    it('Should create an ERC20 dividend token token', async function() {
+    it('Should create an ERC20 dividend token', async function() {
       let divTokenERC20 = await network.createDividendToken({
         uri: 'Ether DivToken',
         owner: accounts[0],
