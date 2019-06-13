@@ -125,7 +125,7 @@ describe('Network.js', function() {
       operatorID = await network.addOperator({
         operator: accounts[3],
         name: 'Name operator',
-        assetType: 'Asset',
+        ipfs: 'QmHash',
         owner: accounts[0]
       });
       assert.equal(operatorID.startsWith('0x'), true);

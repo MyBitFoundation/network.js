@@ -34,7 +34,7 @@ var events = await network.events();
 
 //The setOperator function, onboards a new operator from the platform owner account
 //The returned operator ID is needed to create a crowdsale
-async function setOperator(_uri, _assetType, _address){
+async function setOperator(_uri, _ipfs, _address){
   //Check if operator is already set
   var id = await api.methods.generateOperatorID(_uri).call();
   var currentAddress = await api.methods.getOperatorAddress(id).call();
@@ -43,7 +43,7 @@ async function setOperator(_uri, _assetType, _address){
     id = await network.addOperator({
       operator: _address,
       name: _uri,
-      assetType: _assetType,
+      ipfs: _ipfs,
       owner: platformOwner
     });
 
@@ -213,7 +213,7 @@ async function fundCoffee(){
   console.log('');
   console.log('Funding a coffee run with Ether...');
   //Setup operator (who will also be the assetManager)
-  var operatorID = await setOperator("Mac the operator", "Coffee Machine", operatorAddress);
+  var operatorID = await setOperator("Mac the operator", "QmHash", operatorAddress);
 
   //Start the crowdsale for 20 cad (0.07 eth), funding length 1 day (86400 seconds)
   response = await startCrowdsale("CoffeeRun", '70000000000000000', '86400', operatorID, operatorAddress, 0, '10000', '', '');
@@ -306,7 +306,7 @@ async function fundMiningRig(){
   console.log('');
   console.log('Fund miner using Dai...');
   //Setup operator
-  var operatorID = await setOperator("Bespin Cloud Mining", "ETH Miner", accounts[2]);
+  var operatorID = await setOperator("Bespin Cloud Mining", "QmHash", accounts[2]);
   //Asset crowdsale values
   var manager = accounts[3];
   var managerPercent = 2;

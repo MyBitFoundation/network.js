@@ -225,7 +225,7 @@ module.exports = function (web3, contractAddresses){
       object = await processGas(object, gas.addOperator);
       if(!object.referrer) object.referrer = NULL_ADDRESS
       let block = await web3.eth.getBlock('latest');
-      await operatorsContract.methods.registerOperator(object.operator, object.name, object.assetType, object.referrer)
+      await operatorsContract.methods.registerOperator(object.operator, object.name, object.ipfs, object.referrer)
                              .send({from: object.owner, gas:object.gas, gasPrice:object.gasPrice})
                              .on('error', object.onError)
                              .on('transactionHash', object.onTransactionHash)
