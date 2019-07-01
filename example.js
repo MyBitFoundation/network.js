@@ -46,11 +46,6 @@ async function setOperator(_uri, _ipfs, _address){
       ipfs: _ipfs,
       owner: platformOwner
     });
-
-    await network.acceptEther({
-      id: id,
-      operator: _address
-    });
   } else {
     console.log('Operator already set')
   }
@@ -59,12 +54,32 @@ async function setOperator(_uri, _ipfs, _address){
   return id;
 }
 
+async function setModel(_operatorID, _uri, _ipfs, _address, _token){
+  var id = await api.methods.generateModelID(_uri, _operatorID).call()
+  var operatorAddress = await api.methods.getModelOperator(id).call()
+  if(operatorAddress == '0x0000000000000000000000000000000000000000'){
+    id = await network.addModel({
+      operator: _address,
+      operatorID: _operatorID,
+      name: _uri,
+      ipfs: _ipfs,
+      accept: true,
+      payout: true,
+      token: _token
+    });
+  } else {
+    console.log('Model already set')
+  }
+  console.log('Model ID: ', id);
+  return id
+}
+
 //This function creates a crowdsale. If fundingToken is empty, the crowdsale will be
 //paid using Ether, otherwise an ERC20 compatible address must be passed.
 //In order to avoid revert errors, this function first checks whether a crowdsale
 //has be created using the same parameters. If there is already a crowdsale created,
 //the function returns the asset ID and token address.
-async function startCrowdsale(_uri, _goal, _timeInSeconds, _operatorID, _managerAddress, _percent, _escrow, _fundingToken, _paymentToken){
+async function startCrowdsale(_uri, _goal, _timeInSeconds, _modelID, _managerAddress, _percent, _escrow, _fundingToken, _paymentToken){
   logs = await events.getPastEvents('LogAsset', {
                             filter: { messageID: web3.utils.sha3('Asset funding started'), assetID: web3.utils.sha3(_uri)},
                             fromBlock: 0,
@@ -73,7 +88,7 @@ async function startCrowdsale(_uri, _goal, _timeInSeconds, _operatorID, _manager
   if(logs.length === 0){
     var parameters = {
       assetURI: _uri,
-      operatorID: _operatorID,
+      modelID: _modelID,
       fundingLength: _timeInSeconds,
       startTime: 0,
       amountToRaise: _goal,
@@ -134,12 +149,17 @@ async function contribute(_asset, _amount, _account, _paymentToken){
 }
 
 async function withdrawFromCrowdsale(_asset, _user) {
-  let parameters = {
-    asset: _asset,
-    from: _user
+  crowdsaleFinalized = await api.methods.crowdsaleFinalized(_asset).call();
+  if(!crowdsaleFinalized){
+    let parameters = {
+      asset: _asset,
+      from: _user
+    }
+    await network.payout(parameters);
+    console.log('Crowdsale funds withdrawn')
+  } else {
+    console.log('Crowdsale already finished!');
   }
-  let receipt = await network.payout(parameters);
-  return receipt;
 }
 
 //The generateAsset function allows an owner to generate an asset token that pays
@@ -214,9 +234,9 @@ async function fundCoffee(){
   console.log('Funding a coffee run with Ether...');
   //Setup operator (who will also be the assetManager)
   var operatorID = await setOperator("Mac the operator", "QmHash", operatorAddress);
-
+  var modelID = await setModel(operatorID, "Coffee", "QmHash", operatorAddress, "0x0000000000000000000000000000000000000000")
   //Start the crowdsale for 20 cad (0.07 eth), funding length 1 day (86400 seconds)
-  response = await startCrowdsale("CoffeeRun", '70000000000000000', '86400', operatorID, operatorAddress, 0, '10000', '', '');
+  response = await startCrowdsale("CoffeeRun", '70000000000000000', '86400', modelID, operatorAddress, 0, '10000', '', '');
 
   //Get the asset ID returned by the startCrowdsale function
   var asset = response.asset;
@@ -327,13 +347,11 @@ async function fundMiningRig(){
   if(logs.length === 0){
     //No crowdsale has been started
     //Deploy a token that will represent Dai
-
     dai = await createERC20('Dai', 'DAI', bn(1000000).times(decimals), platformOwner);
     //Distribute Dai to all accounts
     for(var i=1; i<accounts.length; i++){
       await dai.methods.transfer(accounts[i], bn(10000).times(decimals).toString()).send({from: platformOwner, gas: '1000000'});
     }
-
   } else {
     for(var i=0;i<logs.length;i++){
       if(logs[i].returnValues.uri == assetURI){
@@ -344,14 +362,10 @@ async function fundMiningRig(){
     }
   }
   //Fund a mining rig
-  //Set operator to accept Dai
-  var response = await network.acceptERC20Token({
-    id: operatorID,
-    token: dai.options.address,
-    operator: accounts[2]
-  });
+  //Set model to accept Dai
+  var modelID = await setModel(operatorID, "Ethereum Miner", "QmHash", accounts[2], dai.options.address)
   //Start the crowdsale, for 3000 usd (3000 dai), funding length 1 month (2592000 seconds), assetManager is accounts[3] with a 2% fee
-  response = await startCrowdsale(assetURI, fundingGoal, fundingLength, operatorID, manager, managerPercent, 0, dai.options.address, '');
+  response = await startCrowdsale(assetURI, fundingGoal, fundingLength, modelID, manager, managerPercent, 0, dai.options.address, '');
   //Get the asset ID returned by the startCrowdsale function
   var asset = response.asset;
   console.log('Asset: ', asset);

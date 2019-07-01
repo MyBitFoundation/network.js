@@ -1,9 +1,8 @@
 module.exports = {
-  addOperator: '128000',
-  acceptEther: '55000',
-  acceptERC20Token: '55000',
-  payoutEther: '55000',
-  payoutERC20Token: '55000',
+  addOperator: '145000',
+  addAsset: '210000',
+  acceptToken: '80000',
+  payoutToken: '80000',
   approve: '55000',
   createAssetOrderETH: '2370000',
   createAssetOrderERC20: '2410000',
@@ -11,10 +10,9 @@ module.exports = {
   createAsset: '520000',
   createDividendToken: '2030000',
   createERC20Token: '1750000',
-  buyAssetOrderETH: '500000',
-  buyAssetOrderERC20: '500000',
-  payoutETH: '1000000',
-  payoutERC20: '1000000',
+  buyAssetOrderETH: '700000',
+  buyAssetOrderERC20: '700000',
+  payout: '500000',
   issueDividendsETH: '70000',
   issueDividendsERC20: '110000'
 }

@@ -7,7 +7,7 @@ var bn = require('bignumber.js');
 var fs = require("fs-extra");
 var path = process.cwd();
 
-let web3, network, addresses, accounts, api, myb, operatorID, ethAsset, erc20Asset;
+let web3, network, addresses, accounts, api, myb, operatorID, modelID, ethAsset, erc20Asset;
 
 describe('Network.js', function() {
   describe('Setup', function() {
@@ -24,13 +24,12 @@ describe('Network.js', function() {
       //web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
       //assert.equal(web3.currentProvider.host, "http://localhost:8545");
       let mnemonic = "myth like bonus scare over problem client lizard pioneer submit female collect";
-      web3 = new Web3();
-      web3.setProvider(ganache.provider({
-        mnemonic: mnemonic,
-        network_id: 70,
-        total_accounts: 20,
-        db_path: `${path}/node_modules/@mybit/network-chain/activechain`
-      }));
+      web3 = new Web3(ganache.provider({
+                        mnemonic: mnemonic,
+                        network_id: 70,
+                        total_accounts: 20,
+                        db_path: `${path}/node_modules/@mybit/network-chain/activechain`
+                      }))
       assert.equal(web3.currentProvider.options.mnemonic, mnemonic);
     });
 
@@ -52,7 +51,7 @@ describe('Network.js', function() {
         let tokenPerAccount = await web3.utils.toWei('1000', 'ether');
         //Give 100 MyB tokens to all accounts
         for(var i=1; i<accounts.length; i++){
-          await myb.methods.transfer(accounts[i], tokenPerAccount).send({from: accounts[0]});
+          myb.methods.transfer(accounts[i], tokenPerAccount).send({from: accounts[0], gas:700000});
         }
       }
     });
@@ -131,17 +130,30 @@ describe('Network.js', function() {
       assert.equal(operatorID.startsWith('0x'), true);
     });
 
+    it('Should create an asset model', async function(){
+      modelID = await network.addModel({
+        operator: accounts[3],
+        operatorID: operatorID,
+        name: 'Asset Name',
+        ipfs: 'QmHash',
+        accept: false,
+        payout: false,
+      });
+      assert.equal(modelID.startsWith('0x'), true);
+    });
+
     it('Should accept ether and return true', async function(){
       let result = await network.acceptEther({
-        id: operatorID,
+        id: modelID,
         operator: accounts[3]
       });
+      console.log(result)
       assert.equal(result.status, true);
     });
 
     it('Should accept erc20 and return true', async function(){
       let result = await network.acceptERC20Token({
-        id: operatorID,
+        id: modelID,
         token: addresses.MyBitToken,
         operator: accounts[3]
       });
@@ -150,7 +162,7 @@ describe('Network.js', function() {
 
     it('Should payout ether and return true', async function(){
       let result = await network.payoutEther({
-        id: operatorID,
+        id: modelID,
         operator: accounts[3]
       });
       assert.equal(result.status, true);
@@ -158,7 +170,7 @@ describe('Network.js', function() {
 
     it('Should payout erc20 and return true', async function(){
       let result = await network.payoutERC20Token({
-        id: operatorID,
+        id: modelID,
         token: addresses.MyBitToken,
         operator: accounts[3]
       });
@@ -172,7 +184,7 @@ describe('Network.js', function() {
       let result = await network.createAsset({
         assetURI: 'ETH Asset',
         assetManager: accounts[2],
-        operatorID: operatorID,
+        modelID: modelID,
         fundingLength: '2592000',
         startTime: 0,
         amountToRaise: amount,
@@ -190,7 +202,7 @@ describe('Network.js', function() {
       let result = await network.createAsset({
         assetURI: 'ERC20 Asset',
         assetManager: accounts[2],
-        operatorID: operatorID,
+        modelID: modelID,
         fundingLength: '2592000',
         startTime: 0,
         amountToRaise: amount,
