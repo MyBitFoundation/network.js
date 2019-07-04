@@ -525,7 +525,7 @@ module.exports = function (web3, contractAddresses){
     //Pay Eth or ERC20 tokens into a asset's dividend token. The money will be distributed amongst all token holders. Returns web3 PromiEvent
     issueDividends: async (object) => {
       if(!object.approve) object.approve = {}
-      if(!object.buyAsset) object.issueDividends = {}
+      if(!object.issueDividends) object.issueDividends = {}
       object.approve = processEventCallbacks(object.approve);
       object.issueDividends = processEventCallbacks(object.issueDividends);
       let receipt;
