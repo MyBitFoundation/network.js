@@ -250,9 +250,6 @@ module.exports = function (web3, contractAddresses){
                                           .on('transactionHash', object.onTransactionHash)
                                           .on('receipt', object.onReceipt)
 
-
-    console.log('gas: ', receipt.gasUsed)
-
     const logs = await getOperatorEvent('Asset added', object.operator, block.number)
     return logs[logs.length-1].returnValues.id;
    },
@@ -371,7 +368,7 @@ module.exports = function (web3, contractAddresses){
           }
         }
         object.createAsset = await processGas(object.createAsset, gas.createAssetOrderETH);
-        await crowdsaleGeneratorETHContract.methods.createAssetOrderETH(object.assetURI, object.modelID, object.fundingLength, object.startTime, object.amountToRaise, object.assetManagerPercent, object.escrow, object.paymentToken)
+        tx = await crowdsaleGeneratorETHContract.methods.createAssetOrderETH(object.assetURI, object.ipfs, object.modelID, object.fundingLength, object.amountToRaise, object.assetManagerPercent, object.escrow, object.paymentToken)
                                            .send({from: object.assetManager, value: value, gas:object.createAsset.gas, gasPrice:object.createAsset.gasPrice})
                                            .on('error', object.createAsset.onError)
                                            .on('transactionHash', object.createAsset.onTransactionHash)
@@ -392,7 +389,7 @@ module.exports = function (web3, contractAddresses){
           }
         }
         object.createAsset = await processGas(object.createAsset, gas.createAssetOrderERC20);
-        await crowdsaleGeneratorERC20Contract.methods.createAssetOrderERC20(object.assetURI, object.modelID, object.fundingLength, object.startTime, object.amountToRaise, object.assetManagerPercent, object.escrow, object.fundingToken, object.paymentToken)
+        tx = await crowdsaleGeneratorERC20Contract.methods.createAssetOrderERC20(object.assetURI, object.ipfs, object.modelID, object.fundingLength, object.amountToRaise, object.assetManagerPercent, object.escrow, object.fundingToken, object.paymentToken)
                                              .send({from: object.assetManager, value: value, gas:object.createAsset.gas, gasPrice:object.createAsset.gasPrice})
                                              .on('error', object.createAsset.onError)
                                              .on('transactionHash', object.createAsset.onTransactionHash)
@@ -724,6 +721,44 @@ module.exports = function (web3, contractAddresses){
       });
 
       return [...new Set(investors)];
+    },
+
+    //View all the operators
+    getOperators: async () => {
+      initEventsContract();
+      const operators = {};
+      const logs = await eventsContract.getPastEvents('LogOperator', {
+                           filter: {},
+                           fromBlock: 0,
+                           toBlock: 'latest'});
+      for(let i=0; i<logs.length; i++){
+        const eventType = logs[i].returnValues[0];
+        const {
+         id: operatorID,
+         account,
+        } = logs[i].returnValues;
+
+        if(eventType === 'Operator registered'){
+          const {
+           ipfs,
+           name,
+          } = logs[i].returnValues;
+          operators[operatorID] = {
+            ipfs,
+            name,
+            account,
+          }
+        } else if(eventType === 'Operator removed'){
+          delete operators[operatorID];
+        } else if(eventType === 'Operator address changed'){
+          operators[operatorID] = {
+            ...operators[operatorID],
+            account,
+          }
+        }
+      }
+
+      return operators;
     },
 
     getTimestampOfFundedAsset: async (asset) => {

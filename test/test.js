@@ -147,7 +147,6 @@ describe('Network.js', function() {
         id: modelID,
         operator: accounts[3]
       });
-      console.log(result)
       assert.equal(result.status, true);
     });
 
@@ -176,6 +175,12 @@ describe('Network.js', function() {
       });
       assert.equal(result.status, true);
     });
+
+    it('Should return all operators', async function(){
+      let result = await network.getOperators()
+      console.log(result)
+      assert.equal(Object.keys(result).length, 2)
+    });
   });
 
   describe('Start ETH & ERC20 Crowdsales', function() {
@@ -183,10 +188,10 @@ describe('Network.js', function() {
       let amount = await web3.utils.toWei('2', 'ether');
       let result = await network.createAsset({
         assetURI: 'ETH Asset',
+        ipfs: 'QmHash',
         assetManager: accounts[2],
         modelID: modelID,
         fundingLength: '2592000',
-        startTime: 0,
         amountToRaise: amount,
         assetManagerPercent: 0,
         escrow: 0,
@@ -201,10 +206,10 @@ describe('Network.js', function() {
       let amount = await web3.utils.toWei('100', 'ether');
       let result = await network.createAsset({
         assetURI: 'ERC20 Asset',
+        ipfs: 'QmHash',
         assetManager: accounts[2],
         modelID: modelID,
         fundingLength: '2592000',
-        startTime: 0,
         amountToRaise: amount,
         assetManagerPercent: 0,
         escrow: 0,

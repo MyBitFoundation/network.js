@@ -88,9 +88,9 @@ async function startCrowdsale(_uri, _goal, _timeInSeconds, _modelID, _managerAdd
   if(logs.length === 0){
     var parameters = {
       assetURI: _uri,
+      ipfs: 'QmHash',
       modelID: _modelID,
       fundingLength: _timeInSeconds,
-      startTime: 0,
       amountToRaise: _goal,
       assetManagerPercent: _percent,
       assetManager: _managerAddress,
