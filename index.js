@@ -6,7 +6,7 @@ bn.config({ EXPONENTIAL_AT: 80 });
 const NULL_ADDRESS = '0x0000000000000000000000000000000000000000';
 const ETH_ADDRESS = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee';
 
-module.exports = function (web3, contractAddresses){
+module.exports = function (web3, contractAddresses, blockNumber){
   function contract(artifact, address){
     const c = new web3.eth.Contract(artifact.abi, address);
     return c;
@@ -515,7 +515,6 @@ module.exports = function (web3, contractAddresses){
                                               .on('receipt', object.onReceipt);
 
       }
-      console.log('gas: ', receipt.gasUsed)
       return receipt;
     },
 
@@ -556,7 +555,7 @@ module.exports = function (web3, contractAddresses){
     //View the assets an investor has invested in. (This may not represent their current stake, just crowdsales they have contributed to)
     getAssetsByInvestor: async (address) => {
       let assets = [];
-      const logs = await getTransactionEvent('Asset purchased', undefined, address, 0);
+      const logs = await getTransactionEvent('Asset purchased', undefined, address, blockNumber);
       logs.forEach(function (log, index) {
         const asset = log.returnValues.token;
         assets.push(asset);
@@ -569,7 +568,7 @@ module.exports = function (web3, contractAddresses){
     getAssetsByManager: async (address) => {
       initApiContract();
       let assets = [];
-      const logs = await getAssetEvent('Asset funding started', undefined, 0);
+      const logs = await getAssetEvent('Asset funding started', undefined, blockNumber);
       for(let i=0; i<logs.length; i++){
         const asset = logs[i].returnValues.asset;
         const manager = await apiContract.methods.getAssetManager(asset).call();
@@ -585,7 +584,7 @@ module.exports = function (web3, contractAddresses){
     getAssetsByOperator: async (address) => {
       initApiContract();
       let assets = [];
-      const logs = await getAssetEvent('Asset funding started', undefined, 0);
+      const logs = await getAssetEvent('Asset funding started', undefined, blockNumber);
       for(let i=0; i<logs.length; i++){
         const asset = logs[i].returnValues.asset;
         const operator = await apiContract.methods.getAssetOperator(asset).call();
@@ -601,7 +600,7 @@ module.exports = function (web3, contractAddresses){
     getAssetsByModelID: async (bytes32) => {
       initApiContract();
       let assets = [];
-      const logs = await getAssetEvent('Asset funding started', undefined, 0);
+      const logs = await getAssetEvent('Asset funding started', undefined, blockNumber);
       for(let i=0; i<logs.length; i++){
         const asset = logs[i].returnValues.asset;
         const modelID = await apiContract.methods.getAssetModelID(asset).call();
@@ -616,7 +615,7 @@ module.exports = function (web3, contractAddresses){
     //View all assets with blockNumber and manager address
     getTotalAssetsWithBlockNumberAndManager: async () => {
       let assets = [];
-      const logs = await getAssetEvent('Asset funding started', undefined, 0);
+      const logs = await getAssetEvent('Asset funding started', undefined, blockNumber);
       logs.forEach(function (log, index) {
         const {
           asset,
@@ -637,7 +636,7 @@ module.exports = function (web3, contractAddresses){
     //View all assets
     getTotalAssets: async () => {
       let assets = [];
-      const logs = await getAssetEvent('Asset funding started', undefined, 0);
+      const logs = await getAssetEvent('Asset funding started', undefined, blockNumber);
       logs.forEach(function (log, index) {
         const asset = log.returnValues.asset;
         assets.push(asset);
@@ -650,7 +649,7 @@ module.exports = function (web3, contractAddresses){
     getOpenCrowdsales: async () => {
       initApiContract();
       let assets = [];
-      const logs = await getAssetEvent('Asset funding started', undefined, 0);
+      const logs = await getAssetEvent('Asset funding started', undefined, blockNumber);
       for(let i=0; i<logs.length; i++){
         const asset = logs[i].returnValues.asset;
         const finalized = await apiContract.methods.crowdsaleFinalized(asset).call();
@@ -712,7 +711,7 @@ module.exports = function (web3, contractAddresses){
     //Get an asset's investors
     getAssetInvestors: async (asset) => {
       let investors = [];
-      const logs = await getTransactionEvent('Asset purchased', undefined, undefined, 0);
+      const logs = await getTransactionEvent('Asset purchased', undefined, undefined, blockNumber);
       logs.forEach(function (log, index) {
         if(log.returnValues.token == asset){
           const investor = log.returnValues.to;
@@ -729,7 +728,7 @@ module.exports = function (web3, contractAddresses){
       const operators = {};
       const logs = await eventsContract.getPastEvents('LogOperator', {
                            filter: {},
-                           fromBlock: 0,
+                           fromBlock: blockNumber,
                            toBlock: 'latest'});
       for(let i=0; i<logs.length; i++){
         const eventType = logs[i].returnValues[0];
@@ -762,7 +761,7 @@ module.exports = function (web3, contractAddresses){
     },
 
     getTimestampOfFundedAsset: async (asset) => {
-      const logs = await getTransactionEvent('Asset payout', asset, undefined, 0);
+      const logs = await getTransactionEvent('Asset payout', asset, undefined, blockNumber);
       if(logs.length > 0) {
         const blockInfo = await web3.eth.getBlock(logs[0].blockNumber);
         return blockInfo.timestamp;
@@ -771,7 +770,7 @@ module.exports = function (web3, contractAddresses){
     },
 
     getTimestampOfAssetCreation: async asset => {
-      const logs = await getTransactionEvent('Asset funding started', asset, undefined, 0);
+      const logs = await getTransactionEvent('Asset funding started', asset, undefined, blockNumber);
       if(logs.length > 0) {
         const blockInfo = await web3.eth.getBlock(logs[0].blockNumber);
         return blockInfo.timestamp;
@@ -783,7 +782,7 @@ module.exports = function (web3, contractAddresses){
       const assetInterface = contract(Artifacts.DivToken, asset);
       logs = await assetInterface.getPastEvents('LogIncomeReceived', {
                               filter: {},
-                              fromBlock: 0,
+                              fromBlock: blockNumber,
                               toBlock: 'latest'});
 
       return await Promise.all(logs.map(async log => {
@@ -802,7 +801,7 @@ module.exports = function (web3, contractAddresses){
     subscribe: (onError, onResponse) => {
       initEventsContract();
       const allEvents = eventsContract.events.allEvents({
-        fromBlock: 0,
+        fromBlock: blockNumber,
         toBlock: 'latest'
       }, (err, res) => {
         if(err && onError && typeof onError === 'function') onError(err);

@@ -17,7 +17,8 @@ const Promisify = (inner) =>
 //Get a web3 instance which we will make calls to
 const web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
 const addresses = Contracts.addresses.mybit;
-const network = new Network(web3, addresses);
+const block = Contracts.block.mybit;
+const network = new Network(web3, addresses, block);
 
 //Ethereum can't handle decimals. So we have to multiply all of our
 //token values by the number of decimal places they support. In this case, 18

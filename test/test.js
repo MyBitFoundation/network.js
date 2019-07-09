@@ -17,6 +17,7 @@ describe('Network.js', function() {
 
     it('Should return an object', function() {
       addresses = Contracts.addresses.mybit;
+      block = Contracts.block.mybit;
       assert.equal(typeof addresses, 'object');
     });
 
@@ -34,7 +35,7 @@ describe('Network.js', function() {
     });
 
     it('Should create a network object', async function(){
-      network = new Network(web3, addresses);
+      network = new Network(web3, addresses, block);
       assert.equal(typeof network, 'object');
       api = await network.api();
     });
