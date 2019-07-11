@@ -760,6 +760,27 @@ module.exports = function (web3, contractAddresses, blockNumber){
       return operators;
     },
 
+    //View all asset models
+    getAssetModels: async () => {
+      initApiContract();
+      let assetModels = {};
+      const logs = await getOperatorEvent('Asset added', undefined, blockNumber);
+      for(let i=0; i<logs.length; i++){
+        const {
+          name,
+          id,
+          ipfs,
+          origin,
+        } = logs[i].returnValues
+        assetModels[id] = {
+          name,
+          ipfs,
+          operator: origin,
+        }
+      }
+      return assetModels;
+    },
+
     getTimestampOfFundedAsset: async (asset) => {
       const logs = await getTransactionEvent('Asset payout', asset, undefined, blockNumber);
       if(logs.length > 0) {
