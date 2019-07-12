@@ -612,24 +612,30 @@ module.exports = function (web3, contractAddresses, blockNumber){
       return assets;
     },
 
-    //View all assets with blockNumber and manager address
+    //View all assets with blockNumber, manager address and ipfs hash
     getTotalAssetsWithBlockNumberAndManager: async () => {
       let assets = [];
-      const logs = await getAssetEvent('Asset funding started', undefined, blockNumber);
-      logs.forEach(function (log, index) {
+      const [
+        assetLogs,
+        ipfsAssetLogs,
+      ] = await Promise.all([
+        getAssetEvent('Asset funding started', undefined, blockNumber),
+        getAssetEvent('New asset ipfs', undefined, blockNumber),
+      ]);
+      for(let i=0;i<assetLogs.length;i++){
+        const { uri } = ipfsAssetLogs[i].returnValues;
+        const { blockNumber } = assetLogs[i];
         const {
           asset,
           manager,
-        } = log.returnValues;
-
-        const assetInfo = {
-          address: asset,
-          blockNumber: log.blockNumber,
+        } = assetLogs[i].returnValues;
+        assets.push({
+          blockNumber,
           manager,
-        };
-        assets.push(assetInfo);
-      });
-
+          ipfs: uri,
+          address: asset,
+        });
+      }
       return assets;
     },
 
@@ -733,30 +739,31 @@ module.exports = function (web3, contractAddresses, blockNumber){
       for(let i=0; i<logs.length; i++){
         const eventType = logs[i].returnValues[0];
         const {
-         id: operatorID,
          account,
+         ipfs,
+         name,
+         id: operatorID
         } = logs[i].returnValues;
-
         if(eventType === 'Operator registered'){
-          const {
-           ipfs,
-           name,
-          } = logs[i].returnValues;
-          operators[operatorID] = {
+          operators[account] = {
             ipfs,
-            name,
             account,
+            operatorID
           }
         } else if(eventType === 'Operator removed'){
-          delete operators[operatorID];
+          delete operators[account];
         } else if(eventType === 'Operator address changed'){
-          operators[operatorID] = {
-            ...operators[operatorID],
-            account,
+          const toDelete = operators.find(operator => operator.ipfs === ipfs);
+          if(Array.isArray(toDelete) && toDelete.length > 0){
+            delete operators[to]
+          }
+          operators[account] = {
+            ipfs,
+            name,
+            operatorID,
           }
         }
       }
-
       return operators;
     },
 
