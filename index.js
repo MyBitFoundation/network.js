@@ -769,7 +769,6 @@ module.exports = function (web3, contractAddresses, blockNumber){
 
     //View all asset models
     getAssetModels: async () => {
-      initApiContract();
       let assetModels = {};
       const logs = await getOperatorEvent('Asset added', undefined, blockNumber);
       for(let i=0; i<logs.length; i++){
@@ -786,6 +785,24 @@ module.exports = function (web3, contractAddresses, blockNumber){
         }
       }
       return assetModels;
+    },
+
+    getAssetIPFS: async () => {
+      const assetIPFS = {}
+      const logs = await getAssetEvent('New asset ipfs', undefined, blockNumber);
+      for(let i=0; i<logs.length; i++){
+        const {
+          uri,
+          asset,
+          manager,
+        } = logs[i].returnValues
+        assetIPFS[asset] = {
+          ipfs: uri,
+          asset,
+          manager
+        }
+      }
+      return assetIPFS;
     },
 
     getTimestampOfFundedAsset: async (asset) => {

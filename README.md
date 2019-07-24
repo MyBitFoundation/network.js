@@ -26,6 +26,21 @@ In your node.js file import this package \([@mybit/network.js](https://www.npmjs
 const Network = require('@mybit/network.js');
 ```
 
+`Network` takes several objects in its contructor. You need to pass it a `web3` object, the addresses of the platform contracts, and the block number that the platform was first deployed on. For the address and block number you can get those by importing the `contracts` package:
+
+```javascript
+const Contracts = require('@mybit/contracts');
+```
+
+To instantiate a `network` object you can do the following:
+
+```javascript
+const web3 = new Web3(new Web3.providers.HttpProvider(`wss://mainnet.infura.io/v3/${INFURA_API_KEY}`));
+const addresses = Contracts.addresses.mainnet;
+const block = Contracts.block.mainnet;
+const network = new Network(web3, addresses, block);
+```
+
 ### Async/await
 
 Since these functions interact with the Ethereum blockchain, everything is done asynchronously. The easiest way to work with asynchronous functions is with the async/await syntax:
@@ -49,43 +64,42 @@ As of version 0.0.5, these are the functions currently available from network.js
 
 **api\(\) returns \( contract instance \)**
 
-The api function returns the entire [API.sol](https://github.com/MyBitFoundation/MyBit-Network.tech/blob/master/contracts/database/API.sol) contract, which contains many getter functions for accessing variable on [Database.sol](https://github.com/MyBitFoundation/MyBit-Network.tech/blob/master/contracts/database/Database.sol).
+The api function returns the entire [API.sol](https://github.com/MyBitFoundation/MyBit-Network.tech/blob/master/contracts/database/API.sol) contract, which contains many getter functions for accessing variable on [Database.sol](https://github.com/MyBitFoundation/MyBit-Network.tech/blob/master/contracts/database/Database.sol)
 
-**dividendTokenETH\( tokenAddress \) returns \( contract instance \)**
+**dividendToken\( tokenAddress \) returns \( contract instance \)**
 
 This function takes a contract address for an already deployed [DividenToken.sol](https://github.com/MyBitFoundation/MyBit-Network.tech/blob/master/contracts/tokens/erc20/DividendToken.sol) contract, instantiates the contract, and exposes all of its public functions.
 
-**dividendTokenERC20\( tokenAddress \) returns \( contract instance \)**
-
-Much like dividendTokenETH\(\), this function takes a contract address for an already deployed [DividenTokenERC20.sol](https://github.com/MyBitFoundation/MyBit-Network.tech/blob/master/contracts/tokens/erc20/DividendTokenERC20.sol) contract, instantiates the contract, and exposes all of its public functions. The difference between these two contract is that DividenTokenERC20.sol distributes an ERC-20 token as its payment currency, and so some functions are slightly different.
-
 #### Owner Functions
 
-**addOperator\( account, name, owner \) returns \( bytes32 \)**
+**addOperator\( object \) returns \( bytes32 \)**
 
-This function takes a user address and string for the operator name and registers the operator in the [Operators.sol](https://github.com/MyBitFoundation/MyBit-Network.tech/blob/master/contracts/roles/Operators.sol) contract from the owner address. It returns the operatorID that will be needed for any crowdsale creation. Note, this function will not work if the owner address is a contract.
+This function takes an object with the following values:  operatorID (address), name (string), ipfs (string), referrer (address), and owner (address) and registers the operator in the [Operators.sol](https://github.com/MyBitFoundation/MyBit-Network.tech/blob/master/contracts/roles/Operators.sol) contract from the owner address. It returns the operatorID that will be needed for any crowdsale creation. Note, this function will not work if the owner address is a contract.
 
 #### User Functions
 
-**approveBurn\( address \) returns \( bool \)**
 
-This function takes a user address as its parameter. It then sends burn approval to the deployed [MyBitToken](https://github.com/MyBitFoundation/MyBit-Network.tech/blob/master/contracts/tokens/erc20/BurnableToken.sol) contract from that user's address. Right now, it just gives approval for burning up to 10^30 of the smallest increment of MyB tokens -- more than enough to cover all burning costs.
 
 #### Operator Functions
+**addModel\( object \) returns \( bool \)**
 
-**acceptEther\( id, operatorAddress \) returns \( bool \)**
+This function takes an object that contains a bytes32 operatorID, a string of the asset name, a string of the ipfs hash, a bool on whether they accept the cryptocurrency indicated, a bool whether they payout in the cryptocurrency, and a address of the token those bools reference.
 
-An operator must specify the currencies that they accept. This function sets the operator as accepting Ether. Pass the operatorID and the operator address. The function is called from the operator address.
+**acceptToken\( object \) returns \( bool \)**
 
-**acceptERC20Token\( id, tokenAddres, operatorAddress \) returns \( bool \)**
+An operator must specify the currencies that they accept. The object must contain an `id (bytes32)` of the asset model and a `token (address)`. This function sets the asset model as accepting the indicated token. For accepting Ether, do not pass the token variable.
 
-An operator must specify the currencies that they accept. This function sets the operator as accepting ERC-20 tokens. Pass the operatorID, ERC-20 token address, and the operator address. The function is called from the operator address.
+_Note, an asset can accept as many currencies as they want._
 
-_Note, accepting Ether and accepting ERC-20 tokens is not mutually exclusive. An operator can accept as many currencies as they want._
+**payoutToken\( object \) returns \( bool \)**
 
-**issueDividends\( assetID, account, amount \) returns \( bool \)**
+An operator must specify the currencies that they payout with. The object must contain an `id (bytes32)` of the asset model and a `token (address)`. This function sets the asset model as paying with the indicated token. For paying with Ether, do not pass the token variable.
 
-To pay out dividends to investors, an operator can call this function. Pass the assetID, the account from which you want to pay, and the amount you'd like to pay. The function determines if the asset takes Ether or an ERC-20 token. If the account does not have a sufficient balance in the required payment method, the function will fail.
+_Note, an asset can payout as many currencies as they want._
+
+**issueDividends\( object \) returns \( bool \)**
+
+To pay out dividends to investors, an operator can call this function. Pass the following: `asset (address)`, `amount (uint256)`, and `account (address)`. The function determines if the asset takes Ether or an ERC-20 token. If the account does not have a sufficient balance in the required payment method, the function will fail.
 
 #### Asset Manager Functions
 
@@ -95,17 +109,25 @@ To start a crowdsale to fund a new asset you must pass this function and object 
 
 ```javascript
 {
-  assetURI: string, //The URI where information about this asset can be found
-  operatorID: bytes32, //Operator ID
-  fundingLength: uint, //Funding time in seconds
-  amountToRaise: uint, //Funding goal
-  assetManagerPercent: uint, //A number less than 100: The percentage to be received by the AssetManager
   assetManager: address, //Address of the asset manager (this function will be called from their account)
+  assetURI: string, //The URI where information about this asset can be found
+  ipfs: string, //The hash of the IPFS file location
+  modelID: bytes32, //Model ID
+  fundingLength: uint256, //Funding time in seconds
+  amountToRaise: uint256, //Funding goal
+  assetManagerPercent: uint256, //A number less than 100: The percentage to be received by the AssetManager
+  escrow: uint256, //The amount being kept in collateral priced in the paymentToken
+  paymentToken: address, //The token being used to pay the collateral. It will be converted to MYB
   fundingToken: address//Optional: if this asset is being funded with an ERC-20 token, you must pass the address
 }
 ```
 
 The functions returns an object that contains \_assetID, \_assetManager, \_assetURI, and \_tokenAddress.
+
+
+**payout\( object \) returns \( object \)**
+
+After a successful funding, one must call this function to withdraw funds and asset tokens to the asset manager and the platform. You must pass the following `asset (address)` and `from (address)`.
 
 #### Investor Functions
 
@@ -115,9 +137,10 @@ To contribute to a crowdsale call this function and pass the following object:
 
 ```javascript
 {
-  assetID: bytes32, //The id of the asset you want to fund
+  asset: address, //The address of the asset you want to fund
   amount: uint, //The amount you want to contribute
-  address: address, //The address from which you will contribute
+  paymentToken: address, //The token you'd like to pay with. Will be converted to the token used by the asset
+  investor: address, //The address from which you will contribute
 }
 ```
 

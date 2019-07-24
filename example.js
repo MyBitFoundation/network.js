@@ -32,6 +32,7 @@ const [ platformOwner, operatorAddress ] = accounts;
 //commonly used values
 var api = await network.api();
 var events = await network.events();
+var platform = await network.platform();
 
 //The setOperator function, onboards a new operator from the platform owner account
 //The returned operator ID is needed to create a crowdsale
@@ -89,7 +90,7 @@ async function startCrowdsale(_uri, _goal, _timeInSeconds, _modelID, _managerAdd
   if(logs.length === 0){
     var parameters = {
       assetURI: _uri,
-      ipfs: 'QmHash',
+      ipfs: 'QmHashasdfkskjflksjflksdjflskjdflksdjfl',
       modelID: _modelID,
       fundingLength: _timeInSeconds,
       amountToRaise: _goal,
@@ -237,7 +238,7 @@ async function fundCoffee(){
   var operatorID = await setOperator("Mac the operator", "QmHash", operatorAddress);
   var modelID = await setModel(operatorID, "Coffee", "QmHash", operatorAddress, "0x0000000000000000000000000000000000000000")
   //Start the crowdsale for 20 cad (0.07 eth), funding length 1 day (86400 seconds)
-  response = await startCrowdsale("CoffeeRun", '70000000000000000', '86400', modelID, operatorAddress, 0, '10000', '', '');
+  response = await startCrowdsale("CoffeeRun", '70000000000000000', '86400', modelID, operatorAddress, 0, '70000000000000000', '', '');
 
   //Get the asset ID returned by the startCrowdsale function
   var asset = response.asset;
@@ -331,7 +332,7 @@ async function fundMiningRig(){
   //Asset crowdsale values
   var manager = accounts[3];
   var managerPercent = 2;
-  var fundingGoal = bn(3000).times(decimals).toString();
+  var fundingGoal = bn(500).times(decimals).toString();
   var fundingLength = 2592000;
   var assetURI = "Worker1";
 
@@ -366,7 +367,7 @@ async function fundMiningRig(){
   //Set model to accept Dai
   var modelID = await setModel(operatorID, "Ethereum Miner", "QmHash", accounts[2], dai.options.address)
   //Start the crowdsale, for 3000 usd (3000 dai), funding length 1 month (2592000 seconds), assetManager is accounts[3] with a 2% fee
-  response = await startCrowdsale(assetURI, fundingGoal, fundingLength, modelID, manager, managerPercent, 0, dai.options.address, '');
+  response = await startCrowdsale(assetURI, fundingGoal, fundingLength, modelID, manager, managerPercent, fundingGoal, dai.options.address, '');
   //Get the asset ID returned by the startCrowdsale function
   var asset = response.asset;
   console.log('Asset: ', asset);
@@ -444,6 +445,8 @@ network.subscribe(function(response){
 await fundMiningRig();
 
 await fundCoffee();
+console.log('Asset IPFS')
+console.log(await network.getAssetIPFS())
 
 console.log(await network.getAssetsByOperator(operatorAddress));
 console.log(await network.getAssetsByManager(accounts[3]));

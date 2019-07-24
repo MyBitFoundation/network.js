@@ -195,7 +195,7 @@ describe('Network.js', function() {
         fundingLength: '2592000',
         amountToRaise: amount,
         assetManagerPercent: 0,
-        escrow: 0,
+        escrow: amount,
         paymentToken: addresses.MyBitToken
       });
 
@@ -213,7 +213,7 @@ describe('Network.js', function() {
         fundingLength: '2592000',
         amountToRaise: amount,
         assetManagerPercent: 0,
-        escrow: 0,
+        escrow: amount,
         fundingToken: addresses.MyBitToken,
         paymentToken: addresses.MyBitToken
       });
