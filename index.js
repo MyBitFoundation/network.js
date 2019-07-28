@@ -843,7 +843,7 @@ module.exports = function (web3, contractAddresses, blockNumber){
     },
 
     //Subscribe to the network's events
-    subscribe: (onError, onResponse) => {
+    subscribe: (onError, onResponse, blockNumber) => {
       initEventsContract();
       const allEvents = eventsContract.events.allEvents({
         fromBlock: blockNumber,
