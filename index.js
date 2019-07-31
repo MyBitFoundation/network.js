@@ -773,17 +773,17 @@ module.exports = function (web3, contractAddresses, blockNumber){
         initApiContract();
         let assetModels = {};
         const logs = await getOperatorEvent('Asset added', undefined, blockNumber);
-        await Promise.all(logs.map(({returnValues}) => {
+        await Promise.all(logs.map( async log => {
           const {
             name,
             id,
             ipfs,
             origin,
-          } = logs[i].returnValues
+          } = log.returnValues
           const [
             cryptoPayout,
             cryptoPurchase,
-          } = await Promise.all([
+          ] = await Promise.all([
             apiContract.methods.checkAssetPayoutToken(id, tokenAddress).call(),
             apiContract.methods.checkAssetAcceptToken(id, tokenAddress).call()
           ]);
