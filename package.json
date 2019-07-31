@@ -20,7 +20,7 @@
   },
   "homepage": "https://github.com/MyBitFoundation/MyBit-Network.website#readme",
   "dependencies": {
-    "@mybit/contracts": "0.1.35",
+    "@mybit/contracts": "0.1.36",
     "bignumber.js": "^8.0.2",
     "web3": "1.0.0-beta.36"
   },
