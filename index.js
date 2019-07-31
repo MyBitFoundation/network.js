@@ -224,7 +224,7 @@ module.exports = function (web3, contractAddresses, blockNumber){
     //Add an operator. Only the platform owner may call this function.
     addOperator: async (object) => {
       initOperatorsContract();
-      initApiContract
+      initApiContract();
       object = processEventCallbacks(object);
       object = await processGas(object, gas.addOperator);
       if(!object.referrer) object.referrer = NULL_ADDRESS
@@ -768,23 +768,35 @@ module.exports = function (web3, contractAddresses, blockNumber){
     },
 
     //View all asset models
-    getAssetModels: async () => {
-      let assetModels = {};
-      const logs = await getOperatorEvent('Asset added', undefined, blockNumber);
-      for(let i=0; i<logs.length; i++){
-        const {
-          name,
-          id,
-          ipfs,
-          origin,
-        } = logs[i].returnValues
-        assetModels[id] = {
-          name,
-          ipfs,
-          operator: origin,
-        }
-      }
-      return assetModels;
+    getAssetModels: async (tokenAddress) => {
+      return new Promise(async (resolve, reject) => {
+        initApiContract();
+        let assetModels = {};
+        const logs = await getOperatorEvent('Asset added', undefined, blockNumber);
+        await Promise.all(logs.map(({returnValues}) => {
+          const {
+            name,
+            id,
+            ipfs,
+            origin,
+          } = logs[i].returnValues
+          const [
+            cryptoPayout,
+            cryptoPurchase,
+          } = await Promise.all([
+            apiContract.methods.checkAssetPayoutToken(id, tokenAddress).call(),
+            apiContract.methods.checkAssetAcceptToken(id, tokenAddress).call()
+          ]);
+          assetModels[id] = {
+            name,
+            ipfs,
+            operator: origin,
+            cryptoPayout,
+            cryptoPurchase,
+          }
+        }))
+        resolve(assetModels);
+      });
     },
 
     getAssetIPFS: async () => {
