@@ -10,8 +10,8 @@ module.exports = {
   createAsset: '520000',
   createDividendToken: '2030000',
   createERC20Token: '1750000',
-  buyAssetOrderETH: '700000',
-  buyAssetOrderERC20: '700000',
+  buyAssetOrderETH: '800000',
+  buyAssetOrderERC20: '800000',
   payout: '500000',
   issueDividendsETH: '70000',
   issueDividendsERC20: '110000'
