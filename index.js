@@ -345,6 +345,7 @@ module.exports = function (web3, contractAddresses, blockNumber){
     //Create a new asset and begin a crowdsale to fund the asset. Tokens representing shares are paid out to investors.
 
     createAsset: async (object) => {
+      console.log('createAsset', object)
       if(!object.approve) object.approve = {}
       if(!object.createAsset) object.createAsset = {}
       object.approve = processEventCallbacks(object.approve);
@@ -368,7 +369,7 @@ module.exports = function (web3, contractAddresses, blockNumber){
           }
         }
         object.createAsset = await processGas(object.createAsset, gas.createAssetOrderETH);
-        tx = await crowdsaleGeneratorETHContract.methods.createAssetOrderETH(object.assetURI, object.ipfs, object.modelID, object.fundingLength, object.amountToRaise, object.assetManagerPercent, object.escrow, object.paymentToken)
+        tx = await crowdsaleGeneratorETHContract.methods.createAssetOrderETH(object.assetURI, object.ipfs, object.fundingLength, object.amountToRaise, object.assetManagerPercent, object.escrow, object.paymentToken)
                                            .send({from: object.assetManager, value: value, gas:object.createAsset.gas, gasPrice:object.createAsset.gasPrice})
                                            .on('error', object.createAsset.onError)
                                            .on('transactionHash', object.createAsset.onTransactionHash)
@@ -389,7 +390,8 @@ module.exports = function (web3, contractAddresses, blockNumber){
           }
         }
         object.createAsset = await processGas(object.createAsset, gas.createAssetOrderERC20);
-        tx = await crowdsaleGeneratorERC20Contract.methods.createAssetOrderERC20(object.assetURI, object.ipfs, object.modelID, object.fundingLength, object.amountToRaise, object.assetManagerPercent, object.escrow, object.fundingToken, object.paymentToken)
+        console.log(object.assetURI, object.ipfs, object.fundingLength, object.amountToRaise, object.assetManagerPercent, object.escrow, object.fundingToken, object.paymentToken)
+        tx = await crowdsaleGeneratorERC20Contract.methods.createAssetOrderERC20(object.assetURI, object.ipfs, object.fundingLength, object.amountToRaise, object.assetManagerPercent, object.escrow, object.fundingToken, object.paymentToken)
                                              .send({from: object.assetManager, value: value, gas:object.createAsset.gas, gasPrice:object.createAsset.gasPrice})
                                              .on('error', object.createAsset.onError)
                                              .on('transactionHash', object.createAsset.onTransactionHash)
@@ -765,38 +767,6 @@ module.exports = function (web3, contractAddresses, blockNumber){
         }
       }
       return operators;
-    },
-
-    //View all asset models
-    getAssetModels: async (tokenAddress) => {
-      return new Promise(async (resolve, reject) => {
-        initApiContract();
-        let assetModels = {};
-        const logs = await getOperatorEvent('Asset added', undefined, blockNumber);
-        await Promise.all(logs.map( async log => {
-          const {
-            name,
-            id,
-            ipfs,
-            origin,
-          } = log.returnValues
-          const [
-            cryptoPayout,
-            cryptoPurchase,
-          ] = await Promise.all([
-            apiContract.methods.checkAssetPayoutToken(id, tokenAddress).call(),
-            apiContract.methods.checkAssetAcceptToken(id, tokenAddress).call()
-          ]);
-          assetModels[id] = {
-            name,
-            ipfs,
-            operator: origin,
-            cryptoPayout,
-            cryptoPurchase,
-          }
-        }))
-        resolve(assetModels);
-      });
     },
 
     getAssetIPFS: async () => {

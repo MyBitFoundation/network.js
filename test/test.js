@@ -131,51 +131,39 @@ describe('Network.js', function() {
       assert.equal(operatorID.startsWith('0x'), true);
     });
 
-    it('Should create an asset model', async function(){
-      modelID = await network.addModel({
-        operator: accounts[3],
-        operatorID: operatorID,
-        name: 'Asset Name',
-        ipfs: 'QmHash',
-        accept: false,
-        payout: false,
-      });
-      assert.equal(modelID.startsWith('0x'), true);
-    });
+    // it('Should accept ether and return true', async function(){
+    //   let result = await network.acceptEther({
+    //     id: modelID,
+    //     operator: accounts[3]
+    //   });
+    //   assert.equal(result.status, true);
+    // });
 
-    it('Should accept ether and return true', async function(){
-      let result = await network.acceptEther({
-        id: modelID,
-        operator: accounts[3]
-      });
-      assert.equal(result.status, true);
-    });
+    // it('Should accept erc20 and return true', async function(){
+    //   let result = await network.acceptERC20Token({
+    //     id: modelID,
+    //     token: addresses.MyBitToken,
+    //     operator: accounts[3]
+    //   });
+    //   assert.equal(result.status, true);
+    // });
 
-    it('Should accept erc20 and return true', async function(){
-      let result = await network.acceptERC20Token({
-        id: modelID,
-        token: addresses.MyBitToken,
-        operator: accounts[3]
-      });
-      assert.equal(result.status, true);
-    });
+    // it('Should payout ether and return true', async function(){
+    //   let result = await network.payoutEther({
+    //     id: modelID,
+    //     operator: accounts[3]
+    //   });
+    //   assert.equal(result.status, true);
+    // });
 
-    it('Should payout ether and return true', async function(){
-      let result = await network.payoutEther({
-        id: modelID,
-        operator: accounts[3]
-      });
-      assert.equal(result.status, true);
-    });
-
-    it('Should payout erc20 and return true', async function(){
-      let result = await network.payoutERC20Token({
-        id: modelID,
-        token: addresses.MyBitToken,
-        operator: accounts[3]
-      });
-      assert.equal(result.status, true);
-    });
+    // it('Should payout erc20 and return true', async function(){
+    //   let result = await network.payoutERC20Token({
+    //     id: modelID,
+    //     token: addresses.MyBitToken,
+    //     operator: accounts[3]
+    //   });
+    //   assert.equal(result.status, true);
+    // });
 
     it('Should return all operators', async function(){
       let result = await network.getOperators()
@@ -191,7 +179,6 @@ describe('Network.js', function() {
         assetURI: 'ETH Asset',
         ipfs: 'QmHash',
         assetManager: accounts[2],
-        modelID: modelID,
         fundingLength: '2592000',
         amountToRaise: amount,
         assetManagerPercent: 0,
@@ -220,6 +207,25 @@ describe('Network.js', function() {
 
       erc20Asset = result.asset;
       assert.equal(erc20Asset.startsWith('0x'), true);
+    });
+
+    it('Should receive ERC20 asset object with certain parameters', async function(){
+      let amount = await web3.utils.toWei('100', 'ether');
+      let result = await network.createAsset({
+        assetURI: "rFEDMXz4fOuUIkcGzaJV",
+        ipfs: 'QmHash1',
+        assetManager: accounts[9],
+        modelID: modelID,
+        fundingLength: '2592000',
+        amountToRaise: "123000000000000000000",
+        assetManagerPercent: 20,
+        escrow: "74037772273969680",
+        fundingToken: addresses.MyBitToken,
+        paymentToken: addresses.MyBitToken
+      });
+
+      const erc20Asset1 = result.asset;
+      assert.equal(erc20Asset1.startsWith('0x'), true);
     });
   });
 
@@ -308,12 +314,12 @@ describe('Network.js', function() {
       assert.equal(results[1].toLowerCase() == erc20Asset.toLowerCase(), true);
     });
 
-    it('Should return asset operator assets', async function() {
-      let results = await network.getAssetsByOperator(accounts[3]);
-      assert.equal(results.length == 2, true);
-      assert.equal(results[0].toLowerCase() == ethAsset.toLowerCase(), true);
-      assert.equal(results[1].toLowerCase() == erc20Asset.toLowerCase(), true);
-    });
+    // it('Should return asset operator assets', async function() {
+    //   let results = await network.getAssetsByOperator(accounts[3]);
+    //   assert.equal(results.length == 2, true);
+    //   assert.equal(results[0].toLowerCase() == ethAsset.toLowerCase(), true);
+    //   assert.equal(results[1].toLowerCase() == erc20Asset.toLowerCase(), true);
+    // });
 
     it('Should return asset investor assets', async function() {
       let results = await network.getAssetsByInvestor(accounts[4]);
@@ -350,10 +356,10 @@ describe('Network.js', function() {
       assert.equal(result.toLowerCase(), accounts[2].toLowerCase());
     });
 
-    it('Should return accounts[3]', async function() {
-      let result = await network.getAssetOperator(ethAsset);
-      assert.equal(result.toLowerCase(), accounts[3].toLowerCase());
-    });
+    // it('Should return accounts[3]', async function() {
+    //   let result = await network.getAssetOperator(ethAsset);
+    //   assert.equal(result.toLowerCase(), accounts[3].toLowerCase());
+    // });
 
     it('Should return [accounts[4], accounts[5]]', async function() {
       let results = await network.getAssetInvestors(ethAsset);
