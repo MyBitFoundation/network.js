@@ -14,5 +14,5 @@ module.exports = {
   buyAssetOrderERC20: '800000',
   payout: '500000',
   issueDividendsETH: '70000',
-  issueDividendsERC20: '110000'
+  issueDividendsERC20: '130000'
 }
