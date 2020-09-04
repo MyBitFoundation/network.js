@@ -345,7 +345,6 @@ module.exports = function (web3, contractAddresses, blockNumber){
     //Create a new asset and begin a crowdsale to fund the asset. Tokens representing shares are paid out to investors.
 
     createAsset: async (object) => {
-      console.log('createAsset', object)
       if(!object.approve) object.approve = {}
       if(!object.createAsset) object.createAsset = {}
       object.approve = processEventCallbacks(object.approve);
@@ -390,7 +389,6 @@ module.exports = function (web3, contractAddresses, blockNumber){
           }
         }
         object.createAsset = await processGas(object.createAsset, gas.createAssetOrderERC20);
-        console.log(object.assetURI, object.ipfs, object.fundingLength, object.amountToRaise, object.assetManagerPercent, object.escrow, object.fundingToken, object.paymentToken)
         tx = await crowdsaleGeneratorERC20Contract.methods.createAssetOrderERC20(object.assetURI, object.ipfs, object.fundingLength, object.amountToRaise, object.assetManagerPercent, object.escrow, object.fundingToken, object.paymentToken)
                                              .send({from: object.assetManager, value: value, gas:object.createAsset.gas, gasPrice:object.createAsset.gasPrice})
                                              .on('error', object.createAsset.onError)
